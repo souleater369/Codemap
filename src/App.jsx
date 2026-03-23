@@ -714,4 +714,3 @@ class ErrorBoundary extends React.Component {
 export default function App() {
   return <ErrorBoundary><MainApp /></ErrorBoundary>;
 }
-}
