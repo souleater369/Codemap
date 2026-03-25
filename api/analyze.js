@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   // Look for the keys (handles both plural and singular typos!)
   const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
-  
+
   if (!rawKeys) {
     console.error("CRITICAL ERROR: No API keys found in Vercel Environment Variables.");
     return res.status(500).json({ error: "Missing API keys in Vercel settings." });
@@ -22,15 +22,18 @@ export default async function handler(req, res) {
 
   for (const key of keys) {
     try {
-      // Using the rock-solid 1.5-flash model
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1 } // Keeps the JSON strict
-        })
-      });
+      // ✅ FIX: Changed from non-existent 'gemini-3-flash' to valid 'gemini-2.0-flash'
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.1 }, // Keeps the JSON strict
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -42,7 +45,7 @@ export default async function handler(req, res) {
 
       // Success! Send the data back to the frontend
       return res.status(200).json(data);
-      
+
     } catch (err) {
       lastError = err.message;
       console.error("Fetch attempt crashed:", err);
