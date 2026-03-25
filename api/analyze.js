@@ -8,21 +8,24 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Missing code to analyze.' });
 
-  // Look for the keys (handles both plural and singular typos!)
+  // 1. Grab the keys from Vercel Environment Variables
   const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
 
   if (!rawKeys) {
-    console.error("CRITICAL ERROR: No API keys found in Vercel Environment Variables.");
+    console.error("CRITICAL ERROR: No API keys found in Vercel settings.");
     return res.status(500).json({ error: "Missing API keys in Vercel settings." });
   }
 
-  // Clean up the keys in case of accidental spaces
+  // 2. Convert the comma-separated string into a list of individual keys
   const keys = rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
   let lastError = null;
 
-  for (const key of keys) {
+  // 3. The Auto-Switcher Loop
+  for (const [index, key] of keys.entries()) {
     try {
-      // ✅ FIX: Changed from non-existent 'gemini-3-flash' to valid 'gemini-2.0-flash'
+      console.log(`Testing Key ${index + 1} of ${keys.length}...`);
+
+      // Using the valid gemini-2.0-flash model
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
         {
@@ -30,7 +33,7 @@ export default async function handler(req, res) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.1 }, // Keeps the JSON strict
+            generationConfig: { temperature: 0.1 },
           }),
         }
       );
@@ -39,19 +42,21 @@ export default async function handler(req, res) {
 
       if (!response.ok) {
         lastError = data.error?.message || "Google rejected the request.";
-        console.error(`Key rejected: ${lastError}`);
-        continue; // Try the next key in your list
+        console.warn(`Key ${index + 1} failed: ${lastError}. Switching to next key...`);
+        continue; // 🚨 This tells the server to instantly skip to the next key!
       }
 
-      // Success! Send the data back to the frontend
+      // Success! Send the data and completely stop the loop
+      console.log(`Key ${index + 1} succeeded!`);
       return res.status(200).json(data);
 
     } catch (err) {
       lastError = err.message;
-      console.error("Fetch attempt crashed:", err);
+      console.error(`Fetch attempt crashed on Key ${index + 1}:`, err);
+      continue; // Move to the next key if the network crashes
     }
   }
 
-  // If it gets here, all keys failed
-  return res.status(500).json({ error: `All AI keys failed. Google says: ${lastError}` });
+  // 4. If the code reaches the very bottom, it means EVERY key failed
+  return res.status(500).json({ error: `All AI keys exhausted or blocked. Last Google error: ${lastError}` });
 }
