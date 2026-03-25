@@ -1,59 +1,54 @@
+export const config = {
+  maxDuration: 60, // Gives the AI plenty of time to think
+};
+
 export default async function handler(req, res) {
- // 1. Only allow POST requests from your website
- if (req.method !== 'POST') {
-   return res.status(405).json({ error: 'Method not allowed' });
- }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
- try {
-   // 2. Get the prompt sent from your React frontend
-   const { prompt } = req.body;
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'Missing code to analyze.' });
 
-   // 3. Securely grab your API keys from Vercel's secret vault
-   // We split them by comma in case you put multiple keys for rotation!
-   const keysStr = process.env.GEMINI_API_KEYS || "";
-   const keys = keysStr.split(',').filter(k => k.trim() !== "");
-   
-   if (keys.length === 0) {
-     return res.status(500).json({ error: 'API keys are missing in the server.' });
-   }
+  // Look for the keys (handles both plural and singular typos!)
+  const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
+  
+  if (!rawKeys) {
+    console.error("CRITICAL ERROR: No API keys found in Vercel Environment Variables.");
+    return res.status(500).json({ error: "Missing API keys in Vercel settings." });
+  }
 
-   // 4. Try the keys one by one (Automatic Rotation)
-   let aiResponse = null;
-   let lastError = null;
+  // Clean up the keys in case of accidental spaces
+  const keys = rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
+  let lastError = null;
 
-   for (let i = 0; i < keys.length; i++) {
-     const currentKey = keys[i].trim();
-     const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentKey}`;
-;
-     
-     const response = await fetch(aiUrl, {
-       method: 'POST',
-       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({
-         contents: [{ parts: [{ text: prompt }] }],
-         generationConfig: { responseMimeType: "application/json" }
-       })
-     });
+  for (const key of keys) {
+    try {
+      // Using the rock-solid 1.5-flash model
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1 } // Keeps the JSON strict
+        })
+      });
 
-     if (response.ok) {
-       aiResponse = await response.json();
-       break; // It worked! Stop trying keys.
-     } else {
-       lastError = await response.text();
-       console.warn(`Key ${i + 1} failed. Rotating to next...`);
-     }
-   }
+      const data = await response.json();
 
-   // 5. If all keys failed, tell the frontend
-   if (!aiResponse) {
-     throw new Error("All AI keys exhausted or failed.");
-   }
+      if (!response.ok) {
+        lastError = data.error?.message || "Google rejected the request.";
+        console.error(`Key rejected: ${lastError}`);
+        continue; // Try the next key in your list
+      }
 
-   // 6. Send the successful map data back to your website
-   return res.status(200).json(aiResponse);
+      // Success! Send the data back to the frontend
+      return res.status(200).json(data);
+      
+    } catch (err) {
+      lastError = err.message;
+      console.error("Fetch attempt crashed:", err);
+    }
+  }
 
- } catch (error) {
-   console.error("Server Error:", error);
-   return res.status(500).json({ error: 'Failed to generate map.' });
- }
+  // If it gets here, all keys failed
+  return res.status(500).json({ error: `All AI keys failed. Google says: ${lastError}` });
 }
