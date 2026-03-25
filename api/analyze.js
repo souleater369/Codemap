@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
    for (let i = 0; i < keys.length; i++) {
      const currentKey = keys[i].trim();
-     const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-09-2025:generateContent?key=${currentKey}`;
+     const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-preview-09-2025:generateContent?key=${currentKey}`;
      
      const response = await fetch(aiUrl, {
        method: 'POST',
