@@ -1,62 +1,73 @@
 export const config = {
-  maxDuration: 60, // Gives the AI plenty of time to think
+  maxDuration: 60, // Maximum execution window to prevent premature timeouts
 };
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  // Contingency 1: Restrict unauthorized access methods
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed. Protocol breach detected.' });
 
   const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: 'Missing code to analyze.' });
-
-  // 1. Grab the keys from Vercel Environment Variables
-  const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
-
-  if (!rawKeys) {
-    console.error("CRITICAL ERROR: No API keys found in Vercel settings.");
-    return res.status(500).json({ error: "Missing API keys in Vercel settings." });
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'Payload missing or corrupted. Aborting extraction.' });
   }
 
-  // 2. Convert the comma-separated string into a list of individual keys
-  const keys = rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
-  let lastError = null;
+  // Contingency 2: Secure environment variable retrieval
+  const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
+  if (!rawKeys) {
+    console.error("[CRITICAL] Arsenal empty. No API keys found in Vercel environment.");
+    return res.status(500).json({ error: "Server misconfiguration: API keys missing." });
+  }
 
-  // 3. The Auto-Switcher Loop
+  // Sanitization: Strip hidden spaces, quotes, and invalid characters from the keys
+  const keys = rawKeys.split(',')
+    .map(k => k.replace(/['"\s]+/g, ''))
+    .filter(k => k.length > 20); // Ensures only valid-looking keys are loaded
+
+  if (keys.length === 0) {
+    return res.status(500).json({ error: "Server misconfiguration: API keys are malformed." });
+  }
+
+  let lastError = "Unknown protocol failure.";
+
+  // Operation: Key Rotation Engine
   for (const [index, key] of keys.entries()) {
     try {
-      console.log(`Testing Key ${index + 1} of ${keys.length}...`);
+      console.log(`[Recon] Initiating extraction with Key ${index + 1} of ${keys.length}...`);
 
-      // Using the valid gemini-2.0-flash model
+      // ---> THE GOLDEN TICKET FIX: Using the free-tier workhorse <---
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.1 },
+            generationConfig: { temperature: 0.1 }, // Strict logic enforcement
           }),
         }
       );
 
       const data = await response.json();
 
+      // Contingency 3: Tactical Retreat & Swap
       if (!response.ok) {
-        lastError = data.error?.message || "Google rejected the request.";
-        console.warn(`Key ${index + 1} failed: ${lastError}. Switching to next key...`);
-        continue; // 🚨 This tells the server to instantly skip to the next key!
+        lastError = data.error?.message || `HTTP ${response.status}`;
+        console.warn(`[Blocked] Key ${index + 1} compromised. Reason: ${lastError}. Pivoting to backup...`);
+        continue; 
       }
 
-      // Success! Send the data and completely stop the loop
-      console.log(`Key ${index + 1} succeeded!`);
+      console.log(`[Success] Key ${index + 1} secured the intel.`);
       return res.status(200).json(data);
 
     } catch (err) {
+      // Network collapse handler
       lastError = err.message;
-      console.error(`Fetch attempt crashed on Key ${index + 1}:`, err);
-      continue; // Move to the next key if the network crashes
+      console.error(`[Crash] Key ${index + 1} encountered a fatal network error:`, err);
+      continue; 
     }
   }
 
-  // 4. If the code reaches the very bottom, it means EVERY key failed
-  return res.status(500).json({ error: `All AI keys exhausted or blocked. Last Google error: ${lastError}` });
+  // If the loop concludes without returning, the entire arsenal is exhausted.
+  console.error("[Mission Failure] All assets exhausted.");
+  return res.status(500).json({ error: `Extraction failed. Target defenses active. Final Error: ${lastError}` });
 }
