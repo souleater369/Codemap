@@ -23,7 +23,11 @@ export default async function handler(req, res) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.1 }, 
+            // ---> THE MAGIC BULLET: Forces pure JSON, no polite conversation <---
+            generationConfig: { 
+              temperature: 0.1,
+              responseMimeType: "application/json" 
+            }, 
           }),
         }
       );
@@ -32,7 +36,7 @@ export default async function handler(req, res) {
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
-        lastError = `API returned invalid format (Likely Vercel Timeout).`;
+        lastError = `API returned invalid format (Likely Vercel Timeout or Google HTML error).`;
         console.error(`Key ${index + 1} failed:`, text.substring(0, 100));
         continue; 
       }
