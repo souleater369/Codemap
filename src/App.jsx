@@ -8,6 +8,18 @@ import {
   HardDrive, DownloadCloud, UploadCloud, Heart, X, History, Save
 } from 'lucide-react';
 
+// --- THE GLOBAL CRASH CATCHER ---
+// This prevents the "White Screen of Death" by printing hidden errors directly to the screen.
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    document.body.innerHTML = `<div style="padding: 20px; font-family: sans-serif; background: #fff1f2; color: #e11d48; height: 100vh;">
+      <h3 style="font-size: 20px; margin-bottom: 10px;">Critical React Crash</h3>
+      <p><b>Error:</b> ${event.message}</p>
+      <p style="font-size: 12px; margin-top: 20px;">Please take a screenshot of this red screen!</p>
+    </div>`;
+  });
+}
+
 // --- CONFIGURATION ---
 const TIP_JAR_LINK = "https://ko-fi.com/isshhan";
 
@@ -15,7 +27,6 @@ const TIP_JAR_LINK = "https://ko-fi.com/isshhan";
 const extractJSON = (text) => {
   if (!text) throw new Error("AI_PARSE_ERROR_EMPTY");
   try {
-    // Because we enforce JSON mimetype, it should be raw JSON, but we check for markdown just in case
     const match = text.match(/```json\n([\s\S]*?)\n```/);
     if (match) return JSON.parse(match[1]);
     const start = text.indexOf('{');
@@ -27,22 +38,13 @@ const extractJSON = (text) => {
   }
 };
 
-// Aggressive sanitization to prevent Mermaid crashes
 const sanitizeHtml = (text) => {
   if (!text) return '';
-  return text.toString()
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
-    .replace(/\n/g, '<br/>');
+  return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\n/g, '<br/>');
 };
 
-// Guarantees IDs are purely alphanumeric so Mermaid doesn't choke on spaces or hyphens
 const makeSafeId = (id) => 'node_' + String(id).replace(/[^a-zA-Z0-9]/g, '');
 
-// --- Mermaid Engine Caching ---
 const loadMermaid = () => {
   return new Promise((resolve, reject) => {
     if (window.mermaid) return resolve(window.mermaid);
@@ -72,7 +74,6 @@ const EXPORT_STYLES = `
   foreignObject { overflow: visible !important; }
 `;
 
-// --- The 5 Error Profiles ---
 const getErrorTheme = (baseError) => {
   const errStr = String(baseError).toLowerCase();
   const isCORS = errStr.includes("cors") || errStr.includes("fetch") || errStr.includes("network");
@@ -113,7 +114,6 @@ const getErrorTheme = (baseError) => {
   return themes[Math.floor(Math.random() * themes.length)];
 };
 
-// --- Core App ---
 function MainApp() {
   const { userId } = useAuth(); 
   
@@ -625,5 +625,13 @@ export default function App() {
       </div>
     );
   }
-  return <ClerkProvider publishableKey={PUBLISHABLE_KEY}><ErrorBoundary><MainApp /></ErrorBoundary></ClerkProvider>;
+  
+  // THE CRITICAL FIX: The ErrorBoundary MUST wrap the ClerkProvider
+  return (
+    <ErrorBoundary>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <MainApp />
+      </ClerkProvider>
+    </ErrorBoundary>
+  );
 }
