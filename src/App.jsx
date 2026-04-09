@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton, useAuth, ClerkProvider } from "@clerk/clerk-react";
+import { Analytics } from "@vercel/analytics/react";
 import {
   GitBranch, ZoomIn, ZoomOut, Code, Link, Plus,
   AlertTriangle, Maximize, Loader2, Github,
@@ -9,7 +10,6 @@ import {
 } from 'lucide-react';
 
 // --- THE GLOBAL CRASH CATCHER ---
-// This prevents the "White Screen of Death" by printing hidden errors directly to the screen.
 if (typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {
     document.body.innerHTML = `<div style="padding: 20px; font-family: sans-serif; background: #fff1f2; color: #e11d48; height: 100vh;">
@@ -626,10 +626,11 @@ export default function App() {
     );
   }
   
-  // THE CRITICAL FIX: The ErrorBoundary MUST wrap the ClerkProvider
+  // THE CRITICAL FIX: The ErrorBoundary MUST wrap the ClerkProvider, and NO DUPLICATES!
   return (
     <ErrorBoundary>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <Analytics />
         <MainApp />
       </ClerkProvider>
     </ErrorBoundary>
