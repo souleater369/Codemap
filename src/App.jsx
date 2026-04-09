@@ -615,24 +615,11 @@ class ErrorBoundary extends React.Component {
 }
 
 export default function App() {
-  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-  if (!PUBLISHABLE_KEY) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-slate-50 p-4">
-         <div className="p-6 text-center text-red-600 font-bold border border-red-200 bg-red-50 rounded-2xl shadow-sm text-sm">
-            <AlertTriangle className="mx-auto mb-2 w-8 h-8"/>Missing Clerk Publishable Key in environment variables!
-         </div>
-      </div>
-    );
-  }
-  
-  // THE CRITICAL FIX: The ErrorBoundary MUST wrap the ClerkProvider, and NO DUPLICATES!
+  // We removed the ClerkProvider from here because your main.jsx is already handling it!
   return (
     <ErrorBoundary>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <Analytics />
-        <MainApp />
-      </ClerkProvider>
+      <Analytics />
+      <MainApp />
     </ErrorBoundary>
   );
 }
