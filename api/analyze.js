@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   for (const [index, key] of keys.entries()) {
     try {
-      // ---> THE GOLDEN TICKET: 2.5-flash-lite on v1beta <---
+      // The Golden Ticket: 2.5-flash-lite on v1beta
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
         {
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            // ---> THE MAGIC BULLET: Forces pure JSON, no polite conversation <---
+            // The Magic Bullet: Forces pure JSON
             generationConfig: { 
               temperature: 0.1,
               responseMimeType: "application/json" 
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         }
       );
 
-      // ---> CRASH PREVENTION: Check if Google sent an HTML error page before parsing <---
+      // Crash Prevention: Check if Google sent an HTML error page before parsing
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
@@ -49,7 +49,6 @@ export default async function handler(req, res) {
         continue; 
       }
 
-      // Success!
       return res.status(200).json(data);
 
     } catch (err) {
@@ -59,6 +58,5 @@ export default async function handler(req, res) {
     }
   }
 
-  // If we reach here, all keys failed. 
   return res.status(500).json({ error: `All AI keys blocked. Google says: ${lastError}` });
 }
