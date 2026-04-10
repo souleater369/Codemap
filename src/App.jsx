@@ -3,10 +3,9 @@ import { SignedIn, SignedOut, SignInButton, UserButton, useAuth, ClerkProvider }
 import { Analytics } from "@vercel/analytics/react";
 import {
   GitBranch, ZoomIn, ZoomOut, Code, Link, Plus,
-  AlertTriangle, Maximize, Loader2, Github,
-  Copy, FileText, Zap, Edit3, MessageSquare,
-  Download, Camera, Palette, Trash2, Upload, Info,
-  HardDrive, DownloadCloud, UploadCloud, Heart, X, History, Save
+  AlertTriangle, Maximize, Loader2, Camera, Palette, 
+  Trash2, Upload, Info, HardDrive, DownloadCloud, 
+  UploadCloud, Heart, X, History, Save, Download, FileText, Zap, MessageSquare
 } from 'lucide-react';
 
 // --- THE GLOBAL CRASH CATCHER ---
@@ -486,17 +485,18 @@ function MainApp() {
       <div className="flex flex-1 overflow-hidden relative">
         <div className="flex-1 relative bg-slate-50 overflow-hidden" onWheel={e => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - e.deltaY * 0.001) }))} onMouseDown={e => { setIsDragging(true); setDragStart({ x: e.clientX - transform.x, y: e.clientY - transform.y }); }} onMouseMove={e => isDragging && setTransform(p => ({ ...p, x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }))} onMouseUp={() => setIsDragging(false)} onMouseLeave={() => setIsDragging(false)}>
           
+          {/* THE FIX: Absolute Center Overlay */}
           {status === 'idle' && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/90 backdrop-blur-sm p-4 overflow-y-auto custom-scroll">
-              <div className="w-full max-w-3xl bg-white rounded-2xl md:rounded-3xl shadow-xl border overflow-hidden">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/90 backdrop-blur-sm p-4 sm:p-6 lg:p-8 overflow-y-auto custom-scroll">
+              <div className="w-full max-w-2xl bg-white rounded-2xl md:rounded-[2rem] shadow-2xl border overflow-hidden shrink-0 my-auto">
                 <div className="flex bg-slate-50 border-b">
-                  <button className={`flex-1 py-3 md:py-4 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'url' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`} onClick={() => setInputMode('url')}><Link size={14} className="inline mr-1" /> Web Links</button>
-                  <button className={`flex-1 py-3 md:py-4 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'local' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`} onClick={() => setInputMode('local')}><Code size={14} className="inline mr-1" /> Local Snippets</button>
+                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'url' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`} onClick={() => setInputMode('url')}><Link size={14} className="inline mr-1" /> Web Links</button>
+                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'local' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`} onClick={() => setInputMode('local')}><Code size={14} className="inline mr-1" /> Local Snippets</button>
                 </div>
                 
-                <div className="p-5 md:p-8">
+                <div className="p-6 md:p-10">
                   {inputMode === 'url' ? (
-                    <input type="text" value={urlInput} onChange={e => { setUrlInput(e.target.value); setInputError(''); }} placeholder="Enter a GitHub Repo URL, raw link, or ANY public webpage..." className="w-full px-4 py-3 md:px-5 md:py-4 bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl focus:bg-white focus:border-slate-400 outline-none text-sm md:text-base font-medium transition-all" onKeyDown={e => e.key === 'Enter' && handleAnalyze()} />
+                    <input type="text" value={urlInput} onChange={e => { setUrlInput(e.target.value); setInputError(''); }} placeholder="Enter a GitHub Repo URL, raw link, or ANY public webpage..." className="w-full px-5 py-4 md:px-6 md:py-5 bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl focus:bg-white focus:border-slate-400 outline-none text-sm md:text-base font-medium transition-all" onKeyDown={e => e.key === 'Enter' && handleAnalyze()} />
                   ) : (
                     <div className="space-y-4 md:space-y-6">
                       <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center cursor-pointer transition-colors ${isDraggingOver ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50'}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
@@ -516,7 +516,7 @@ function MainApp() {
                   )}
 
                   {inputError && <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-xs md:text-sm font-medium flex items-center"><AlertTriangle size={16} className="mr-2 shrink-0" />{inputError}</div>}
-                  <button onClick={handleAnalyze} className="mt-6 md:mt-8 w-full py-3 md:py-4 bg-slate-900 text-white rounded-xl font-bold text-sm md:text-base shadow-lg hover:bg-slate-800 transition-all active:scale-95">Generate Architecture Map</button>
+                  <button onClick={handleAnalyze} className="mt-6 md:mt-8 w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm md:text-base shadow-lg hover:bg-slate-800 transition-all active:scale-95">Generate Architecture Map</button>
                 </div>
               </div>
             </div>
@@ -554,8 +554,8 @@ function MainApp() {
           </div>
         </div>
 
-        {/* --- NODE DETAILS --- */}
-        <div className={`w-full sm:w-80 md:w-96 bg-white border-l shadow-2xl z-20 transition-transform duration-300 flex flex-col absolute sm:relative right-0 top-0 bottom-0 ${selectedNodeId ? 'translate-x-0' : 'translate-x-full absolute'}`}>
+        {/* THE FIX: Floating Sidebar - Never takes up flex-box space! */}
+        <div className={`absolute right-0 top-0 bottom-0 w-full sm:w-80 md:w-96 bg-white border-l shadow-2xl z-20 transition-transform duration-300 flex flex-col ${selectedNodeId ? 'translate-x-0' : 'translate-x-full'}`}>
           {selectedNode && (
             <>
               <div className="p-4 border-b shrink-0 bg-slate-50">
@@ -594,7 +594,6 @@ function MainApp() {
   );
 }
 
-// --- CRASH PROOF WRAPPER ---
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null }; }
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
@@ -615,7 +614,6 @@ class ErrorBoundary extends React.Component {
 }
 
 export default function App() {
-  // We removed the ClerkProvider from here because your main.jsx is already handling it!
   return (
     <ErrorBoundary>
       <Analytics />
