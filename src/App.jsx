@@ -420,12 +420,25 @@ function MainApp() {
     
     showToast("Compiling High-Res PNG...", 'info');
     const img = new Image(); img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const cvs = document.createElement('canvas'); const ctx = cvs.getContext('2d');
-      cvs.width = bbox.width * 2; cvs.height = bbox.height * 2;
-      ctx.fillStyle = "#f8fafc"; ctx.fillRect(0, 0, cvs.width, cvs.height);
-      ctx.scale(2, 2); ctx.drawImage(img, 0, 0); URL.revokeObjectURL(svgUrl);
-      triggerDownload(cvs.toDataURL('image/png'), 'architecture.png');
+        img.onload = () => {
+      try {
+        const cvs = document.createElement('canvas'); const ctx = cvs.getContext('2d');
+        cvs.width = bbox.width * 2; cvs.height = bbox.height * 2;
+        ctx.fillStyle = "#f8fafc"; ctx.fillRect(0, 0, cvs.width, cvs.height);
+        ctx.scale(2, 2); ctx.drawImage(img, 0, 0); 
+        
+        // This is the line the browser hates. If it fails, it instantly jumps to the catch block!
+        const pngData = cvs.toDataURL('image/png'); 
+        
+        URL.revokeObjectURL(svgUrl);
+        triggerDownload(pngData, 'architecture.png');
+      } catch (err) {
+        // The Safety Net: Prevent the crash and download the SVG instead
+        showToast("Mobile security blocked PNG. Exporting high-res SVG instead.", 'warning');
+        triggerDownload(svgUrl, 'architecture.svg');
+      }
+    };
+    
     };
     img.onerror = () => triggerDownload(svgUrl, 'architecture.svg');
     img.src = svgUrl;
