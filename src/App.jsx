@@ -5,7 +5,8 @@ import {
   GitBranch, ZoomIn, ZoomOut, Code, Link, Plus,
   AlertTriangle, Maximize, Loader2, Camera, Palette, 
   Trash2, Upload, Info, HardDrive, DownloadCloud, 
-  UploadCloud, Heart, X, History, Save, Download, FileText, Zap, MessageSquare
+  UploadCloud, Heart, X, History, Save, Download, FileText, Zap, 
+  MessageSquare, Moon, Sun, ArrowRightLeft, ArrowDownUp
 } from 'lucide-react';
 
 // --- THE GLOBAL CRASH CATCHER ---
@@ -52,7 +53,6 @@ const loadMermaid = () => {
     script.onload = () => {
       window.mermaid.initialize({
         startOnLoad: false, theme: 'base', securityLevel: 'loose',
-        themeVariables: { primaryColor: '#ffffff', primaryTextColor: '#1e293b', lineColor: '#94a3b8', fontFamily: 'Inter, sans-serif' },
         flowchart: { htmlLabels: true, curve: 'basis', padding: 20, nodeSpacing: 60, rankSpacing: 70 }
       });
       resolve(window.mermaid);
@@ -64,8 +64,8 @@ const loadMermaid = () => {
 
 const EXPORT_STYLES = `
   .node-card { padding: 8px; width: 220px; text-align: left; font-family: Inter, sans-serif; white-space: normal; }
-  .node-head { border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: flex-start; }
-  .node-title { font-weight: 700; font-size: 13px; color: #0f172a; word-break: break-word; line-height: 1.2; }
+  .node-head { border-bottom: 1px solid rgba(148, 163, 184, 0.3); padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .node-title { font-weight: 700; font-size: 13px; word-break: break-word; line-height: 1.2; }
   .node-badge { font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 8px; white-space: nowrap; margin-left: 6px; }
   .node-badge.cmplx { background: #fee2e2; color: #ef4444; } 
   .node-badge.clean { background: #d1fae5; color: #10b981; }
@@ -73,6 +73,7 @@ const EXPORT_STYLES = `
   foreignObject { overflow: visible !important; }
 `;
 
+// --- FULLY RESTORED PERSONALITIES ---
 const getErrorTheme = (baseError) => {
   const errStr = String(baseError).toLowerCase();
   const isCORS = errStr.includes("cors") || errStr.includes("fetch") || errStr.includes("network");
@@ -83,31 +84,31 @@ const getErrorTheme = (baseError) => {
       type: 'professional', icon: '🛡️', title: 'Access Restricted',
       msg: isMermaid ? "The rendering engine failed to parse the AI's data structure." : (isCORS ? "The target server actively refused the connection due to strict security policies." : "The AI pipeline returned a malformed data structure."),
       steps: ["Acknowledge network security block.", "Switch input mode to 'Local Files / Snippets'.", "Manually upload the source code or copy-paste the text.", "Re-initialize the analysis."],
-      styles: { border: 'border-slate-300', text: 'text-slate-800', bgLight: 'bg-slate-100', bgBtn: 'bg-slate-800', hover: 'hover:bg-slate-900', shadow: 'shadow-slate-200' }
+      styles: { border: 'border-slate-300', text: 'text-slate-800', bgLight: 'bg-slate-100', bgBtn: 'bg-slate-800', hover: 'hover:bg-slate-900' }
     },
     {
       type: 'detective', icon: '🕵️‍♂️', title: 'Dead End Reached',
       msg: isCORS ? "Looks like the website has an anti-bot security perimeter. We can't sneak past their CORS headers." : "The AI's logic engine tripped over an unexpected anomaly in the code.",
       steps: ["Switch to manual extraction mode.", "Go directly to the target website in a new tab.", "Copy the raw text into your clipboard.", "Drop it in the Local Snippets tab to bypass their firewall."],
-      styles: { border: 'border-amber-200', text: 'text-amber-900', bgLight: 'bg-amber-50', bgBtn: 'bg-amber-700', hover: 'hover:bg-amber-800', shadow: 'shadow-amber-200' }
+      styles: { border: 'border-amber-200', text: 'text-amber-900', bgLight: 'bg-amber-50', bgBtn: 'bg-amber-700', hover: 'hover:bg-amber-800' }
     },
     {
       type: 'cute', icon: '🥺🐾', title: 'Oopsie Daisies!',
       msg: isCORS ? "The grumpy internet guards won't let us peek at that link! Most websites block automated bots to protect their data." : "Our AI got a little confused trying to read that code.",
       steps: ["Don't worry!", "Click the 'Local Files / Snippets' tab.", "Copy and paste your code directly into the box.", "Try generating again! ✨"],
-      styles: { border: 'border-pink-200', text: 'text-pink-800', bgLight: 'bg-pink-50', bgBtn: 'bg-pink-500', hover: 'hover:bg-pink-600', shadow: 'shadow-pink-200' }
+      styles: { border: 'border-pink-200', text: 'text-pink-800', bgLight: 'bg-pink-50', bgBtn: 'bg-pink-500', hover: 'hover:bg-pink-600' }
     },
     {
       type: 'zen', icon: '🧘‍♂️', title: 'A Blocked Path',
       msg: isCORS ? "The river of data from that link does not flow here. The website has built a wall." : "The mind of the AI could not find structure in the chaos of that code.",
       steps: ["Breathe in.", "Copy the text from your source.", "Paste it into the Local Snippets sanctuary.", "Let the architecture reveal itself."],
-      styles: { border: 'border-emerald-200', text: 'text-emerald-800', bgLight: 'bg-emerald-50', bgBtn: 'bg-emerald-600', hover: 'hover:bg-emerald-700', shadow: 'shadow-emerald-200' }
+      styles: { border: 'border-emerald-200', text: 'text-emerald-800', bgLight: 'bg-emerald-50', bgBtn: 'bg-emerald-600', hover: 'hover:bg-emerald-700' }
     },
     {
       type: 'techbro', icon: '🚀', title: 'Blocker Detected!',
       msg: isCORS ? "Bro, their server just straight-up denied our GET request. CORS policies are blocking our hustle." : "The LLM hallucinated the JSON schema. Bad prompt output.",
       steps: ["Pivot your strategy.", "Hit the 'Local Files' tab.", "Hardcode paste your snippets.", "Ship the map! 🚢"],
-      styles: { border: 'border-blue-200', text: 'text-blue-900', bgLight: 'bg-blue-50', bgBtn: 'bg-blue-600', hover: 'hover:bg-blue-700', shadow: 'shadow-blue-200' }
+      styles: { border: 'border-blue-200', text: 'text-blue-900', bgLight: 'bg-blue-50', bgBtn: 'bg-blue-600', hover: 'hover:bg-blue-700' }
     }
   ];
   return themes[Math.floor(Math.random() * themes.length)];
@@ -116,6 +117,10 @@ const getErrorTheme = (baseError) => {
 function MainApp() {
   const { userId } = useAuth(); 
   
+  // Theme & Layout State
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [layoutDir, setLayoutDir] = useState('TD'); // TD = Top-Down, LR = Left-Right
+
   const [localHistory, setLocalHistory] = useState([]);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
   const importFileRef = useRef(null);
@@ -144,6 +149,11 @@ function MainApp() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => { loadMermaid().catch(() => {}); }, []);
+
+  // Regenerate Map when Theme or Layout Direction Changes
+  useEffect(() => {
+    if (architecture) generateMermaid(architecture);
+  }, [isDarkMode, layoutDir, architecture]);
 
   const showToast = useCallback((msg, type = 'info') => {
     setToast({ msg, type });
@@ -262,8 +272,9 @@ function MainApp() {
       setStatus('analyzing');
       setStatusMessage('AI is constructing the architecture map...');
 
+      // UPGRADE: Max Node Limit Increased to 30
       const prompt = `Analyze these source files/text. Extract core architecture: classes, functions, relationships.
-      Keep to max 20 significant nodes. Strict JSON only format:
+      Keep to max 30 significant nodes. Strict JSON only format:
       {"nodes":[{"id":"n1","label":"Func","type":"function","file":"path","complexity":5,"code_snippet":"...","description":"...","returns":"...","ui_design":"...","userComment":""}],"edges":[{"source":"n1","target":"n2"}]}
       Files: ${fileContents.map(f => `\n--- ${f.path} ---\n${f.content.substring(0, 3000)}`).join('\n')}`;
 
@@ -293,25 +304,31 @@ function MainApp() {
 
   const generateMermaid = useCallback((data) => {
     if (!data?.nodes) return;
-    let m = 'graph TD;\n';
+    
+    // Theming Engine Injection
+    let m = `%%{init: {'theme': '${isDarkMode ? 'dark' : 'base'}', 'themeVariables': { 'fontFamily': 'Inter, sans-serif', 'primaryColor': '${isDarkMode ? '#0f172a' : '#ffffff'}', 'primaryTextColor': '${isDarkMode ? '#f8fafc' : '#0f172a'}', 'lineColor': '${isDarkMode ? '#475569' : '#94a3b8'}' }}}%%\n`;
+    m += `graph ${layoutDir};\n`; // Applies the Top-Down or Left-Right layout
+
     const files = [...new Set(data.nodes.map(n => n.file || 'Unknown'))];
+    const nodeBg = isDarkMode ? '#1e293b' : '#ffffff';
+    const nodeText = isDarkMode ? '#f8fafc' : '#0f172a';
     
     files.forEach((file, i) => {
       m += `  subgraph file_${i} ["📄 ${sanitizeHtml(file)}"]\n    direction TB\n`;
       data.nodes.filter(n => (n.file || 'Unknown') === file).forEach(node => {
         const isCmplx = (node.complexity || 1) > 7;
         
-        let html = `<div xmlns='http://www.w3.org/1999/xhtml' class='node-card'>`;
+        let html = `<div xmlns='http://www.w3.org/1999/xhtml' class='node-card' style='background-color:${nodeBg}; color:${nodeText}; border-radius: 8px;'>`;
         html += `<div class='node-head'><span class='node-title'>${sanitizeHtml(node.label)}</span><span class='node-badge ${isCmplx ? 'cmplx' : 'clean'}'>C: ${node.complexity || 1}</span></div>`;
         if (node.description) html += `<div class='node-info'>⚡ <b>Action:</b> ${sanitizeHtml(node.description)}</div>`;
-        if (node.ui_design) html += `<div class='node-info' style='color:#2563eb;'>🎨 <b>Design:</b> ${sanitizeHtml(node.ui_design)}</div>`;
-        if (node.returns) html += `<div class='node-info' style='color:#64748b;'>↩️ <b>Yields:</b> ${sanitizeHtml(node.returns)}</div>`;
-        if (node.userComment) html += `<div class='node-info' style='color:#9333ea; margin-top:4px; padding-top:4px; border-top:1px dashed #e2e8f0;'>💬 ${sanitizeHtml(node.userComment)}</div>`;
+        if (node.ui_design) html += `<div class='node-info' style='color:#3b82f6;'>🎨 <b>Design:</b> ${sanitizeHtml(node.ui_design)}</div>`;
+        if (node.returns) html += `<div class='node-info' style='color:#8b5cf6;'>↩️ <b>Yields:</b> ${sanitizeHtml(node.returns)}</div>`;
+        if (node.userComment) html += `<div class='node-info' style='color:#ec4899; margin-top:4px; padding-top:4px; border-top:1px dashed rgba(148,163,184,0.3);'>💬 ${sanitizeHtml(node.userComment)}</div>`;
         html += `</div>`;
         
         m += `    ${makeSafeId(node.id)}("${html}"):::${isCmplx ? 'complexNode' : 'cleanNode'}\n`;
       });
-      m += `  end\n  style file_${i} fill:#f8fafc50,stroke:#cbd5e1,stroke-width:1px,stroke-dasharray:4 4,rx:12,ry:12\n`;
+      m += `  end\n  style file_${i} fill:${isDarkMode ? '#0f172a80' : '#f8fafc50'},stroke:${isDarkMode ? '#334155' : '#cbd5e1'},stroke-width:1px,stroke-dasharray:4 4,rx:12,ry:12\n`;
     });
 
     if (data.edges) {
@@ -322,9 +339,9 @@ function MainApp() {
       });
     }
     
-    m += `  classDef complexNode fill:#fff1f2,stroke:#fca5a5,stroke-width:1.5px,rx:8px,ry:8px;\n  classDef cleanNode fill:#ffffff,stroke:#e2e8f0,stroke-width:1.5px,rx:8px,ry:8px;\n`;
+    m += `  classDef complexNode fill:${isDarkMode ? '#450a0a' : '#fff1f2'},stroke:${isDarkMode ? '#ef4444' : '#fca5a5'},stroke-width:1.5px,rx:8px,ry:8px;\n  classDef cleanNode fill:${nodeBg},stroke:${isDarkMode ? '#334155' : '#e2e8f0'},stroke-width:1.5px,rx:8px,ry:8px;\n`;
     setMermaidCode(m);
-  }, []);
+  }, [isDarkMode, layoutDir]);
 
   useEffect(() => {
     if (status !== 'ready' || !mermaidCode || !mapContentRef.current) return;
@@ -360,7 +377,7 @@ function MainApp() {
 
   const handleNodeEdit = (id, field, value) => {
     const newArch = { ...architecture, nodes: architecture.nodes.map(n => n.id === id ? { ...n, [field]: value } : n) };
-    setArchitecture(newArch); generateMermaid(newArch);
+    setArchitecture(newArch);
   };
 
   const handleRefactor = async (node) => {
@@ -378,6 +395,7 @@ function MainApp() {
     finally { setIsRefactoring(false); }
   };
 
+  // The Bulletproof Exporter
   const exportMap = (type) => {
     setExportMenuOpen(false);
     if (!mapContentRef.current) return;
@@ -398,13 +416,11 @@ function MainApp() {
         if (n.returns) md += `- **Returns:** ${n.returns}\n`;
         md += `\n`;
       });
-      return triggerDownload(URL.createObjectURL(new Blob([md], { type: 'text/markdown' })), 'architecture.md');
+      return triggerDownload("data:text/markdown;charset=utf-8," + encodeURIComponent(md), 'architecture.md');
     }
 
     const svgEl = mapContentRef.current.querySelector('svg');
-    if (!svgEl) {
-      return showToast("No map rendered to export!", 'error');
-    }
+    if (!svgEl) return showToast("No map rendered to export!", 'error');
     
     const cloned = svgEl.cloneNode(true);
     const style = document.createElement('style'); style.textContent = EXPORT_STYLES;
@@ -415,174 +431,221 @@ function MainApp() {
     if (!cloned.getAttribute('xmlns')) cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
     const svgData = new XMLSerializer().serializeToString(cloned);
-    const svgUrl = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml' }));
+    const svgUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
+    
     if (type === 'svg') return triggerDownload(svgUrl, 'architecture.svg');
     
     showToast("Compiling High-Res PNG...", 'info');
-    const img = new Image(); img.crossOrigin = "anonymous";
-        img.onload = () => {
+    const img = new Image(); 
+    
+    img.onload = () => {
       try {
         const cvs = document.createElement('canvas'); const ctx = cvs.getContext('2d');
         cvs.width = bbox.width * 2; cvs.height = bbox.height * 2;
-        ctx.fillStyle = "#f8fafc"; ctx.fillRect(0, 0, cvs.width, cvs.height);
+        ctx.fillStyle = isDarkMode ? "#0f172a" : "#f8fafc"; 
+        ctx.fillRect(0, 0, cvs.width, cvs.height);
         ctx.scale(2, 2); ctx.drawImage(img, 0, 0); 
         
-        // This is the line the browser hates. If it fails, it instantly jumps to the catch block!
         const pngData = cvs.toDataURL('image/png'); 
-        
-        URL.revokeObjectURL(svgUrl);
         triggerDownload(pngData, 'architecture.png');
       } catch (err) {
-        // The Safety Net: Prevent the crash and download the SVG instead
-        showToast("Mobile security blocked PNG. Exporting high-res SVG instead.", 'warning');
+        showToast("Mobile browser blocked PNG export. Downloading high-res SVG instead.", 'warning');
         triggerDownload(svgUrl, 'architecture.svg');
       }
     };
     
-    };
-    img.onerror = () => triggerDownload(svgUrl, 'architecture.svg');
+    img.onerror = () => { triggerDownload(svgUrl, 'architecture.svg'); };
     img.src = svgUrl;
   };
 
   const selectedNode = architecture?.nodes?.find(n => n.id === selectedNodeId);
 
+  // Core Render
   return (
-    <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans overflow-hidden">
+    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
       {toast && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 w-[90%] md:w-auto">
-          <div className={`px-4 md:px-5 py-3 rounded-full shadow-lg border flex items-center space-x-2 text-xs md:text-sm font-semibold ${toast.type === 'error' ? 'bg-red-50 text-red-700' : toast.type === 'warning' ? 'bg-amber-50 text-amber-700' : toast.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-slate-900 text-white'}`}>
+          <div className={`px-4 md:px-5 py-3 rounded-full shadow-lg border flex items-center space-x-2 text-xs md:text-sm font-semibold ${toast.type === 'error' ? 'bg-red-950 border-red-800 text-red-200' : toast.type === 'warning' ? 'bg-amber-950 border-amber-800 text-amber-200' : toast.type === 'success' ? 'bg-green-950 border-green-800 text-green-200' : (isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white')}`}>
             {toast.type === 'error' ? <AlertTriangle size={16}/> : <Info size={16}/>}
             <span className="truncate">{toast.msg}</span>
           </div>
         </div>
       )}
 
-      <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-white border-b border-slate-200 z-10 shadow-sm shrink-0">
+      <header className={`flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b z-10 shadow-sm shrink-0 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center space-x-2 md:space-x-3">
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-lg flex items-center justify-center text-white"><GitBranch size={18} strokeWidth={2.5} /></div>
+          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-white'}`}><GitBranch size={18} strokeWidth={2.5} /></div>
           <div><h1 className="text-base md:text-lg font-bold">CodeMap</h1><p className="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest hidden sm:block">Visualizer</p></div>
         </div>
 
         {status !== 'idle' && (
-          <button onClick={() => { setStatus('idle'); setSelectedNodeId(null); setTransform({x:0,y:0,scale:1}); }} className="hidden md:flex items-center px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-full border shadow-sm font-semibold mx-auto transition-all active:scale-95">
+          <button onClick={() => { setStatus('idle'); setSelectedNodeId(null); setTransform({x:0,y:0,scale:1}); }} className={`hidden md:flex items-center px-5 py-2.5 rounded-full border shadow-sm font-semibold mx-auto transition-all active:scale-95 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
             <Plus size={16} className="mr-2" /><span className="text-sm">New Map</span>
           </button>
         )}
 
         <div className="flex items-center space-x-1 sm:space-x-2">
-          <button onClick={() => setHistorySidebarOpen(true)} className="flex items-center p-2 sm:px-4 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-medium text-xs sm:text-sm"><History size={16} /><span className="hidden sm:inline sm:ml-2">Vault</span></button>
+          {/* THE CREATIVE UPGRADE: Theme Toggler */}
+          <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 sm:px-3 sm:py-2 rounded-full font-medium transition-colors ${isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
+          <button onClick={() => setHistorySidebarOpen(true)} className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-medium text-xs sm:text-sm ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}><History size={16} /><span className="hidden sm:inline sm:ml-2">Vault</span></button>
           
-          {status === 'ready' && <button onClick={saveToHistory} className="flex items-center p-2 sm:px-4 sm:py-2 bg-blue-50 text-blue-700 rounded-full font-bold text-xs sm:text-sm"><Save size={16} /><span className="hidden sm:inline sm:ml-2">Save</span></button>}
+          {status === 'ready' && <button onClick={saveToHistory} className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm ${isDarkMode ? 'bg-indigo-900 text-indigo-300 hover:bg-indigo-800' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}><Save size={16} /><span className="hidden sm:inline sm:ml-2">Save</span></button>}
 
           <div className="relative">
-            <button onClick={() => setExportMenuOpen(!exportMenuOpen)} disabled={status !== 'ready'} className="flex items-center p-2 sm:px-4 sm:py-2 bg-slate-900 text-white rounded-full disabled:opacity-30 text-xs sm:text-sm"><Download size={16} /><span className="hidden sm:inline sm:ml-2">Export</span></button>
+            <button onClick={() => setExportMenuOpen(!exportMenuOpen)} disabled={status !== 'ready'} className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full disabled:opacity-30 text-xs sm:text-sm transition-colors ${isDarkMode ? 'bg-slate-100 text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-slate-800'}`}><Download size={16} /><span className="hidden sm:inline sm:ml-2">Export</span></button>
             {exportMenuOpen && status === 'ready' && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in">
-                <button onClick={() => exportMap('png')} className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center border-b"><Camera size={16} className="mr-3 text-slate-400" /> PNG</button>
-                <button onClick={() => exportMap('svg')} className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center border-b"><Camera size={16} className="mr-3 text-slate-400" /> SVG</button>
-                <button onClick={() => exportMap('md')} className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center"><FileText size={16} className="mr-3 text-slate-400" /> Markdown</button>
+              <div className={`absolute right-0 mt-2 w-48 border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                <button onClick={() => exportMap('png')} className={`w-full text-left px-4 py-3 text-sm flex items-center border-b ${isDarkMode ? 'hover:bg-slate-700 border-slate-700' : 'hover:bg-slate-50 border-slate-100'}`}><Camera size={16} className="mr-3 text-slate-400" /> PNG</button>
+                <button onClick={() => exportMap('svg')} className={`w-full text-left px-4 py-3 text-sm flex items-center border-b ${isDarkMode ? 'hover:bg-slate-700 border-slate-700' : 'hover:bg-slate-50 border-slate-100'}`}><Camera size={16} className="mr-3 text-slate-400" /> SVG</button>
+                <button onClick={() => exportMap('md')} className={`w-full text-left px-4 py-3 text-sm flex items-center ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-50'}`}><FileText size={16} className="mr-3 text-slate-400" /> Markdown</button>
               </div>
             )}
           </div>
 
-          <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
-          <a href={TIP_JAR_LINK} target="_blank" rel="noopener noreferrer" className="flex items-center p-2 sm:px-4 sm:py-2 text-pink-600 bg-pink-50 rounded-full font-bold text-xs sm:text-sm"><Heart size={16} className="fill-red-500" /><span className="hidden sm:inline sm:ml-2">Support</span></a>
-          <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
+          <div className={`w-px h-6 mx-1 hidden sm:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
+          <a href={TIP_JAR_LINK} target="_blank" rel="noopener noreferrer" className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm ${isDarkMode ? 'bg-pink-950 text-pink-400' : 'bg-pink-50 text-pink-600'}`}><Heart size={16} className="fill-red-500" /><span className="hidden sm:inline sm:ml-2">Support</span></a>
+          <div className={`w-px h-6 mx-1 hidden sm:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
           
-          <SignedOut><SignInButton mode="modal"><button className="px-3 py-2 sm:px-4 bg-slate-900 text-white rounded-full font-bold text-xs sm:text-sm">Login</button></SignInButton></SignedOut>
+          <SignedOut><SignInButton mode="modal"><button className={`px-3 py-2 sm:px-4 rounded-full font-bold text-xs sm:text-sm transition-colors ${isDarkMode ? 'bg-indigo-500 hover:bg-indigo-400 text-white' : 'bg-slate-900 text-white'}`}>Login</button></SignInButton></SignedOut>
           <SignedIn><UserButton afterSignOutUrl="/" /></SignedIn>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden relative">
-        <div className="flex-1 relative bg-slate-50 overflow-hidden" onWheel={e => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - e.deltaY * 0.001) }))} onMouseDown={e => { setIsDragging(true); setDragStart({ x: e.clientX - transform.x, y: e.clientY - transform.y }); }} onMouseMove={e => isDragging && setTransform(p => ({ ...p, x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }))} onMouseUp={() => setIsDragging(false)} onMouseLeave={() => setIsDragging(false)}>
+        <div className={`flex-1 relative overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-50'}`} onWheel={e => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - e.deltaY * 0.001) }))} onMouseDown={e => { setIsDragging(true); setDragStart({ x: e.clientX - transform.x, y: e.clientY - transform.y }); }} onMouseMove={e => isDragging && setTransform(p => ({ ...p, x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }))} onMouseUp={() => setIsDragging(false)} onMouseLeave={() => setIsDragging(false)}>
           
-          {/* THE FIX: Absolute Center Overlay */}
+          {/* Main Input Screen */}
           {status === 'idle' && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/90 backdrop-blur-sm p-4 sm:p-6 lg:p-8 overflow-y-auto custom-scroll">
-              <div className="w-full max-w-2xl bg-white rounded-2xl md:rounded-[2rem] shadow-2xl border overflow-hidden shrink-0 my-auto">
-                <div className="flex bg-slate-50 border-b">
-                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'url' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`} onClick={() => setInputMode('url')}><Link size={14} className="inline mr-1" /> Web Links</button>
-                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'local' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`} onClick={() => setInputMode('local')}><Code size={14} className="inline mr-1" /> Local Snippets</button>
+            <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto custom-scroll ${isDarkMode ? 'bg-slate-950/90' : 'bg-slate-50/90'} backdrop-blur-sm`}>
+              <div className={`w-full max-w-2xl rounded-2xl md:rounded-[2rem] shadow-2xl border overflow-hidden shrink-0 my-auto ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                <div className={`flex border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'url' ? (isDarkMode ? 'bg-slate-900 shadow-sm text-white' : 'bg-white shadow-sm text-slate-900') : 'text-slate-500'}`} onClick={() => setInputMode('url')}><Link size={14} className="inline mr-1" /> Web Links</button>
+                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'local' ? (isDarkMode ? 'bg-slate-900 shadow-sm text-white' : 'bg-white shadow-sm text-slate-900') : 'text-slate-500'}`} onClick={() => setInputMode('local')}><Code size={14} className="inline mr-1" /> Local Snippets</button>
                 </div>
                 
                 <div className="p-6 md:p-10">
                   {inputMode === 'url' ? (
-                    <input type="text" value={urlInput} onChange={e => { setUrlInput(e.target.value); setInputError(''); }} placeholder="Enter a GitHub Repo URL, raw link, or ANY public webpage..." className="w-full px-5 py-4 md:px-6 md:py-5 bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl focus:bg-white focus:border-slate-400 outline-none text-sm md:text-base font-medium transition-all" onKeyDown={e => e.key === 'Enter' && handleAnalyze()} />
+                    <input type="text" value={urlInput} onChange={e => { setUrlInput(e.target.value); setInputError(''); }} placeholder="Enter a GitHub Repo URL, raw link, or ANY public webpage..." className={`w-full px-5 py-4 md:px-6 md:py-5 border rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-medium transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:bg-slate-900 focus:border-indigo-500' : 'bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-400'}`} onKeyDown={e => e.key === 'Enter' && handleAnalyze()} />
                   ) : (
                     <div className="space-y-4 md:space-y-6">
-                      <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center cursor-pointer transition-colors ${isDraggingOver ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50'}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
+                      <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center cursor-pointer transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
                         <input type="file" multiple webkitdirectory="true" className="hidden" id="file-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
-                        
-                        <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center"><Upload size={24} className="text-slate-400 mb-2" /><span className="text-xs md:text-sm font-bold text-slate-700">Drag & Drop files or Browse</span></label>
+                        <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center"><Upload size={24} className="text-slate-400 mb-2" /><span className={`text-xs md:text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Drag & Drop files or Browse Folders</span></label>
                       </div>
                       <div className="max-h-48 md:max-h-64 overflow-y-auto space-y-3 custom-scroll pr-2">
                         {localFiles.map((file) => (
-                          <div key={file.id} className="border rounded-xl flex flex-col">
-                            <div className="flex bg-slate-50 px-3 py-2 border-b"><input type="text" value={file.name} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, name: e.target.value } : f))} className="bg-transparent text-xs md:text-sm font-bold flex-1 outline-none" placeholder="filename.js" /><button onClick={() => setLocalFiles(p => p.filter(f => f.id !== file.id))} className="text-slate-400 hover:text-red-500"><Trash2 size={14}/></button></div>
-                            <textarea value={file.content} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, content: e.target.value } : f))} className="w-full h-20 md:h-24 p-3 text-xs font-mono resize-none outline-none custom-scroll" placeholder="// Paste code here..." />
+                          <div key={file.id} className={`border rounded-xl flex flex-col overflow-hidden ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                            <div className={`flex px-3 py-2 border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}><input type="text" value={file.name} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, name: e.target.value } : f))} className={`bg-transparent text-xs md:text-sm font-bold flex-1 outline-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`} placeholder="filename.js" /><button onClick={() => setLocalFiles(p => p.filter(f => f.id !== file.id))} className="text-slate-400 hover:text-red-500"><Trash2 size={14}/></button></div>
+                            <textarea value={file.content} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, content: e.target.value } : f))} className={`w-full h-20 md:h-24 p-3 text-xs font-mono resize-none outline-none custom-scroll ${isDarkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-800'}`} placeholder="// Paste code here..." />
                           </div>
                         ))}
                       </div>
-                      <button onClick={() => setLocalFiles(p => [...p, { id: Date.now(), name: `snippet_${p.length + 1}.js`, content: '' }])} className="text-[10px] md:text-xs font-bold text-blue-600 flex items-center"><Plus size={14} className="mr-1"/> Add Section</button>
+                      <button onClick={() => setLocalFiles(p => [...p, { id: Date.now(), name: `snippet_${p.length + 1}.js`, content: '' }])} className={`text-[10px] md:text-xs font-bold flex items-center ${isDarkMode ? 'text-indigo-400' : 'text-blue-600'}`}><Plus size={14} className="mr-1"/> Add Section</button>
                     </div>
                   )}
 
-                  {inputError && <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-xs md:text-sm font-medium flex items-center"><AlertTriangle size={16} className="mr-2 shrink-0" />{inputError}</div>}
-                  <button onClick={handleAnalyze} className="mt-6 md:mt-8 w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm md:text-base shadow-lg hover:bg-slate-800 transition-all active:scale-95">Generate Architecture Map</button>
+                  {inputError && <div className={`mt-4 p-3 rounded-lg text-xs md:text-sm font-medium flex items-center ${isDarkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-700'}`}><AlertTriangle size={16} className="mr-2 shrink-0" />{inputError}</div>}
+                  <button onClick={handleAnalyze} className={`mt-6 md:mt-8 w-full py-4 rounded-xl font-bold text-sm md:text-base shadow-lg transition-all active:scale-95 ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}>Generate Architecture Map</button>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Loading / Error States */}
           {status !== 'idle' && status !== 'ready' && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm p-4 overflow-y-auto">
+            <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center p-4 overflow-y-auto ${isDarkMode ? 'bg-slate-950/80' : 'bg-white/80'} backdrop-blur-sm`}>
                {status === 'error' && errorData ? (
-                 <div className={`text-center bg-white p-6 md:p-8 rounded-2xl shadow-2xl border ${errorData.styles.border} max-w-md w-full animate-in zoom-in-95`}>
+                 <div className={`text-center p-6 md:p-8 rounded-2xl shadow-2xl border max-w-md w-full animate-in zoom-in-95 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white ' + errorData.styles.border}`}>
                     <div className="text-4xl md:text-5xl mb-3">{errorData.icon}</div>
-                    <h3 className={`text-lg md:text-xl font-bold ${errorData.styles.text} mb-2`}>{errorData.title}</h3>
-                    <p className="text-slate-600 font-medium leading-relaxed mb-5 text-xs md:text-sm">{errorData.msg}</p>
-                    <div className={`${errorData.styles.bgLight} p-4 rounded-xl border ${errorData.styles.border} text-xs md:text-sm ${errorData.styles.text} text-left mb-6 font-medium shadow-inner`}>
+                    <h3 className={`text-lg md:text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : errorData.styles.text}`}>{errorData.title}</h3>
+                    <p className={`font-medium leading-relaxed mb-5 text-xs md:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{errorData.msg}</p>
+                    <div className={`p-4 rounded-xl border text-xs md:text-sm text-left mb-6 font-medium shadow-inner ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : errorData.styles.bgLight + ' ' + errorData.styles.text + ' ' + errorData.styles.border}`}>
                       <b className="uppercase tracking-wider text-[10px] opacity-70 block mb-2">Tactical Bypass Options:</b>
                       <ol className="list-decimal list-inside space-y-1 ml-1">{errorData.steps.map((step, idx) => <li key={idx}>{step}</li>)}</ol>
                     </div>
-                    <button onClick={() => setStatus('idle')} className={`w-full py-3 ${errorData.styles.bgBtn} ${errorData.styles.hover} text-white font-bold text-sm rounded-xl transition-all shadow-lg active:scale-95`}>Return to Base</button>
+                    <button onClick={() => setStatus('idle')} className={`w-full py-3 text-white font-bold text-sm rounded-xl transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-500' : errorData.styles.bgBtn + ' ' + errorData.styles.hover}`}>Return to Base</button>
                  </div>
                ) : (
-                 <div className="text-center bg-white p-6 md:p-8 rounded-2xl shadow-xl border w-full max-w-xs animate-in fade-in"><Loader2 size={36} className="animate-spin text-slate-800 mx-auto mb-4"/><h3 className="text-lg font-bold mb-1">Analyzing</h3><p className="text-xs text-slate-500 font-medium animate-pulse">{statusMessage}</p></div>
+                 <div className={`text-center p-6 md:p-8 rounded-2xl shadow-xl border w-full max-w-xs animate-in fade-in ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                   <Loader2 size={36} className={`animate-spin mx-auto mb-4 ${isDarkMode ? 'text-indigo-500' : 'text-slate-800'}`}/>
+                   <h3 className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Analyzing</h3>
+                   <p className={`text-xs font-medium animate-pulse ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{statusMessage}</p>
+                 </div>
                )}
             </div>
           )}
 
+          {/* Map Controls */}
           {status === 'ready' && (
-            <div className="absolute bottom-4 right-4 z-10 flex space-x-1 bg-white p-1.5 rounded-xl shadow-lg border">
-              <button onClick={() => setTransform(p => ({ ...p, scale: p.scale + 0.2 }))} className="p-1.5 hover:bg-slate-100 rounded-lg"><ZoomIn size={16}/></button>
-              <button onClick={() => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - 0.2) }))} className="p-1.5 hover:bg-slate-100 rounded-lg"><ZoomOut size={16}/></button>
-              <button onClick={() => setTransform({ x: 0, y: 0, scale: 1 })} className="p-1.5 hover:bg-slate-100 rounded-lg"><Maximize size={16}/></button>
+            <div className={`absolute bottom-4 right-4 z-10 flex space-x-1 p-1.5 rounded-xl shadow-lg border transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+              <button onClick={() => setTransform(p => ({ ...p, scale: p.scale + 0.2 }))} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><ZoomIn size={16}/></button>
+              <button onClick={() => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - 0.2) }))} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><ZoomOut size={16}/></button>
+              <button onClick={() => setTransform({ x: 0, y: 0, scale: 1 })} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><Maximize size={16}/></button>
+              
+              <div className={`w-px h-5 mx-1 my-auto ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
+              
+              {/* THE CREATIVE UPGRADE: Layout Toggler */}
+              <button onClick={() => setLayoutDir(layoutDir === 'TD' ? 'LR' : 'TD')} className={`p-1.5 rounded-lg font-bold text-[10px] flex items-center ${isDarkMode ? 'hover:bg-slate-800 text-indigo-400' : 'hover:bg-slate-100 text-blue-600'}`}>
+                {layoutDir === 'TD' ? <ArrowRightLeft size={16}/> : <ArrowDownUp size={16}/>}
+              </button>
             </div>
           )}
 
+          {/* The Canvas */}
           <div className="w-full h-full origin-top-left cursor-grab active:cursor-grabbing flex items-center justify-center p-10 md:p-20 min-w-max min-h-max" style={{ transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})` }}>
             <div ref={mapContentRef} />
           </div>
         </div>
 
-        {/* THE FIX: Floating Sidebar - Never takes up flex-box space! */}
-        <div className={`absolute right-0 top-0 bottom-0 w-full sm:w-80 md:w-96 bg-white border-l shadow-2xl z-20 transition-transform duration-300 flex flex-col ${selectedNodeId ? 'translate-x-0' : 'translate-x-full'}`}>
+        {/* Floating Sidebar - Node Details */}
+        <div className={`absolute right-0 top-0 bottom-0 w-full sm:w-80 md:w-96 border-l shadow-2xl z-20 transition-transform duration-300 flex flex-col ${selectedNodeId ? 'translate-x-0' : 'translate-x-full'} ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
           {selectedNode && (
             <>
-              <div className="p-4 border-b shrink-0 bg-slate-50">
-                <div className="flex justify-between items-start mb-2"><span className="px-2 py-1 text-[10px] font-bold uppercase bg-slate-200 text-slate-600 rounded">{selectedNode.type || 'node'}</span><button onClick={() => setSelectedNodeId(null)} className="text-slate-400 hover:text-slate-900 bg-white rounded-full p-1 shadow-sm border"><X size={16}/></button></div>
-                <input type="text" value={selectedNode.label || 'Unknown'} onChange={e => handleNodeEdit(selectedNode.id, 'label', e.target.value)} className="w-full text-lg font-bold bg-transparent outline-none border-b border-transparent focus:border-slate-300 transition-colors" />
+              <div className={`p-4 border-b shrink-0 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>{selectedNode.type || 'node'}</span>
+                  <button onClick={() => setSelectedNodeId(null)} className={`rounded-full p-1 shadow-sm border ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-900'}`}><X size={16}/></button>
+                </div>
+                <input type="text" value={selectedNode.label || 'Unknown'} onChange={e => handleNodeEdit(selectedNode.id, 'label', e.target.value)} className={`w-full text-lg font-bold bg-transparent outline-none border-b border-transparent transition-colors ${isDarkMode ? 'text-white focus:border-slate-500' : 'text-slate-900 focus:border-slate-300'}`} />
                 <div className="text-[10px] text-slate-400 mt-1 truncate">{selectedNode.file || 'unknown_file.js'}</div>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll">
-                <div className="grid grid-cols-2 gap-2"><div className={`p-3 rounded-xl border ${(selectedNode.complexity || 1) > 7 ? 'bg-red-50 border-red-100 text-red-600' : 'bg-green-50 border-green-100 text-green-600'}`}><div className="text-[10px] font-bold uppercase opacity-70 mb-1">Complexity</div><div className="text-xl font-bold">{selectedNode.complexity || 1}</div></div><div className="p-3 rounded-xl border bg-slate-50"><div className="text-[10px] font-bold uppercase text-slate-500 mb-1">Status</div><div className={`text-xs font-bold ${(selectedNode.complexity || 1) > 7 ? 'text-red-600' : 'text-slate-700'}`}>{(selectedNode.complexity || 1) > 7 ? 'Needs Refactor' : 'Clean'}</div></div></div>
-                <div className="space-y-2">{selectedNode.description && <div className="bg-slate-50 rounded-xl p-3 border text-xs text-slate-700"><Zap size={14} className="inline mr-1 text-slate-400"/> {selectedNode.description}</div>}{selectedNode.returns && <div className="bg-slate-50 rounded-xl p-3 border text-xs text-slate-700 font-mono break-all">↩️ {selectedNode.returns}</div>}{selectedNode.ui_design && <div className="bg-blue-50 rounded-xl p-3 border border-blue-100 text-xs text-blue-900"><Palette size={14} className="inline mr-1"/> {selectedNode.ui_design}</div>}</div>
-                <div><label className="text-[10px] font-bold text-slate-500 uppercase flex items-center mb-1.5"><MessageSquare size={12} className="mr-1.5"/> Graph Notes</label><textarea value={selectedNode.userComment || ''} onChange={e => handleNodeEdit(selectedNode.id, 'userComment', e.target.value)} placeholder="Type intel here..." className="w-full h-16 p-2 bg-slate-50 border rounded-lg outline-none text-xs resize-none custom-scroll focus:bg-white focus:border-slate-300" /></div>
-                <div><label className="text-[10px] font-bold text-slate-500 uppercase flex items-center mb-1.5"><Code size={12} className="mr-1.5"/> Source Code</label><pre className="bg-slate-900 border-slate-700 text-slate-300 p-3 rounded-xl text-[10px] overflow-x-auto max-h-48 custom-scroll"><code>{selectedNode.code_snippet || 'No code provided'}</code></pre></div>
-                <div className="pt-2 pb-6"><button onClick={() => handleRefactor(selectedNode)} disabled={isRefactoring} className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-semibold disabled:opacity-70 flex justify-center items-center shadow-md active:scale-95">{isRefactoring ? <Loader2 size={14} className="animate-spin mr-2"/> : <Zap size={14} className="mr-2 text-yellow-400 fill-yellow-400"/>} Ask AI to Refactor</button>{refactorSuggestion && <div className="mt-3 p-3 bg-slate-50 border rounded-xl text-[10px] whitespace-pre-wrap max-h-64 overflow-y-auto custom-scroll shadow-inner">{refactorSuggestion}</div>}</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className={`p-3 rounded-xl border ${(selectedNode.complexity || 1) > 7 ? (isDarkMode ? 'bg-red-950 border-red-900 text-red-400' : 'bg-red-50 border-red-100 text-red-600') : (isDarkMode ? 'bg-green-950 border-green-900 text-green-400' : 'bg-green-50 border-green-100 text-green-600')}`}>
+                    <div className="text-[10px] font-bold uppercase opacity-70 mb-1">Complexity</div><div className="text-xl font-bold">{selectedNode.complexity || 1}</div>
+                  </div>
+                  <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="text-[10px] font-bold uppercase text-slate-500 mb-1">Status</div>
+                    <div className={`text-xs font-bold ${(selectedNode.complexity || 1) > 7 ? (isDarkMode ? 'text-red-400' : 'text-red-600') : (isDarkMode ? 'text-slate-300' : 'text-slate-700')}`}>{(selectedNode.complexity || 1) > 7 ? 'Needs Refactor' : 'Clean'}</div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  {selectedNode.description && <div className={`rounded-xl p-3 border text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}><Zap size={14} className="inline mr-1 text-slate-400"/> {selectedNode.description}</div>}
+                  {selectedNode.returns && <div className={`rounded-xl p-3 border text-xs font-mono break-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>↩️ {selectedNode.returns}</div>}
+                  {selectedNode.ui_design && <div className={`rounded-xl p-3 border text-xs ${isDarkMode ? 'bg-blue-950 border-blue-900 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-900'}`}><Palette size={14} className="inline mr-1"/> {selectedNode.ui_design}</div>}
+                </div>
+                
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center mb-1.5"><MessageSquare size={12} className="mr-1.5"/> Graph Notes</label>
+                  <textarea value={selectedNode.userComment || ''} onChange={e => handleNodeEdit(selectedNode.id, 'userComment', e.target.value)} placeholder="Type intel here..." className={`w-full h-16 p-2 border rounded-lg outline-none text-xs resize-none custom-scroll ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:bg-slate-700 focus:border-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-slate-300'}`} />
+                </div>
+                
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center mb-1.5"><Code size={12} className="mr-1.5"/> Source Code</label>
+                  <pre className={`p-3 rounded-xl text-[10px] overflow-x-auto max-h-48 custom-scroll ${isDarkMode ? 'bg-black border border-slate-800 text-slate-300' : 'bg-slate-900 border-slate-700 text-slate-300'}`}><code>{selectedNode.code_snippet || 'No code provided'}</code></pre>
+                </div>
+                
+                <div className="pt-2 pb-6">
+                  <button onClick={() => handleRefactor(selectedNode)} disabled={isRefactoring} className={`w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-70 flex justify-center items-center shadow-md active:scale-95 ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-white'}`}>
+                    {isRefactoring ? <Loader2 size={14} className="animate-spin mr-2"/> : <Zap size={14} className="mr-2 text-yellow-400 fill-yellow-400"/>} Ask AI to Refactor
+                  </button>
+                  {refactorSuggestion && <div className={`mt-3 p-3 border rounded-xl text-[10px] whitespace-pre-wrap max-h-64 overflow-y-auto custom-scroll shadow-inner ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200'}`}>{refactorSuggestion}</div>}
+                </div>
               </div>
             </>
           )}
@@ -590,19 +653,49 @@ function MainApp() {
       </div>
 
       {/* --- VAULT SIDEBAR --- */}
-      <div className={`fixed inset-y-0 left-0 w-full sm:w-80 bg-white border-r shadow-2xl z-40 transform transition-transform duration-300 flex flex-col ${historySidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-4 border-b flex justify-between items-center bg-slate-50"><h2 className="text-base font-bold flex items-center"><HardDrive size={18} className="mr-2 text-slate-500"/> Local Vault</h2><button onClick={() => setHistorySidebarOpen(false)} className="text-slate-400 hover:text-slate-800 bg-white rounded-full p-1.5 shadow-sm border"><X size={18}/></button></div>
-        <div className="p-4 border-b bg-white space-y-3"><div className="text-[10px] text-slate-500 mb-2 leading-relaxed bg-blue-50 p-3 rounded-xl border border-blue-100">Maps are stored in your session. <b>Export your backup</b> to save them!</div><button onClick={handleExportBackup} className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center shadow-sm"><DownloadCloud size={16} className="mr-2" /> Export Backup (.json)</button><button onClick={() => importFileRef.current?.click()} className="w-full py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center shadow-sm"><UploadCloud size={16} className="mr-2" /> Import Backup</button><input type="file" ref={importFileRef} accept=".json" onChange={handleImportBackup} className="hidden" /></div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scroll bg-slate-50/50"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">History</div>{localHistory.length === 0 ? <div className="text-center text-xs text-slate-500 mt-6 border-2 border-dashed border-slate-200 rounded-xl p-6">No maps saved yet.</div> : localHistory.map(item => (<div key={item.id} onClick={() => loadFromHistory(item)} className="p-3 border rounded-xl hover:border-blue-300 hover:shadow-md cursor-pointer group bg-white relative"><div className="flex justify-between items-start mb-1.5"><h3 className="font-bold text-xs text-slate-800 truncate pr-6">{item.title}</h3><button onClick={(e) => deleteHistoryItem(item.id, e)} className="text-slate-300 hover:text-red-500 absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white"><Trash2 size={14}/></button></div><div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{new Date(item.createdAt).toLocaleDateString()} • {item.architecture?.nodes?.length || 0} Nodes</div></div>))}</div>
+      <div className={`fixed inset-y-0 left-0 w-full sm:w-80 border-r shadow-2xl z-40 transform transition-transform duration-300 flex flex-col ${historySidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+        <div className={`p-4 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+          <h2 className="text-base font-bold flex items-center"><HardDrive size={18} className="mr-2 text-slate-500"/> Local Vault</h2>
+          <button onClick={() => setHistorySidebarOpen(false)} className={`rounded-full p-1.5 shadow-sm border ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-800'}`}><X size={18}/></button>
+        </div>
+        
+        <div className={`p-4 border-b space-y-3 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`text-[10px] mb-2 leading-relaxed p-3 rounded-xl border ${isDarkMode ? 'bg-indigo-950 border-indigo-900 text-indigo-300' : 'bg-blue-50 border-blue-100 text-slate-500'}`}>Maps are stored in your session. <b>Export your backup</b> to save them!</div>
+          <button onClick={handleExportBackup} className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center shadow-sm ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-white'}`}><DownloadCloud size={16} className="mr-2" /> Export Backup (.json)</button>
+          <button onClick={() => importFileRef.current?.click()} className={`w-full py-2.5 border rounded-xl text-xs font-bold flex items-center justify-center shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'}`}><UploadCloud size={16} className="mr-2" /> Import Backup</button>
+          <input type="file" ref={importFileRef} accept=".json" onChange={handleImportBackup} className="hidden" />
+        </div>
+        
+        <div className={`flex-1 overflow-y-auto p-4 space-y-3 custom-scroll ${isDarkMode ? 'bg-slate-950/50' : 'bg-slate-50/50'}`}>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">History</div>
+          {localHistory.length === 0 ? <div className={`text-center text-xs mt-6 border-2 border-dashed rounded-xl p-6 ${isDarkMode ? 'text-slate-500 border-slate-700' : 'text-slate-500 border-slate-200'}`}>No maps saved yet.</div> : localHistory.map(item => (
+            <div key={item.id} onClick={() => loadFromHistory(item)} className={`p-3 border rounded-xl cursor-pointer group relative transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-indigo-500' : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-md'}`}>
+              <div className="flex justify-between items-start mb-1.5"><h3 className={`font-bold text-xs truncate pr-6 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.title}</h3><button onClick={(e) => deleteHistoryItem(item.id, e)} className={`absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-red-500 ${isDarkMode ? 'text-slate-500 bg-slate-800' : 'text-slate-300 bg-white'}`}><Trash2 size={14}/></button></div>
+              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{new Date(item.createdAt).toLocaleDateString()} • {item.architecture?.nodes?.length || 0} Nodes</div>
+            </div>
+          ))}
+        </div>
       </div>
       
-      {historySidebarOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 animate-in fade-in" onClick={() => setHistorySidebarOpen(false)}></div>}
+      {historySidebarOpen && <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 animate-in fade-in" onClick={() => setHistorySidebarOpen(false)}></div>}
+
+      {/* --- SAAS FOOTER --- */}
+      <footer className={`w-full border-t py-3 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between text-[10px] font-medium z-10 shrink-0 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
+        <div className="mb-2 sm:mb-0">
+          © {new Date().getFullYear()} CodeMap Visualizer. All rights reserved.
+        </div>
+        <div className="flex space-x-4">
+          <a href="#" className={`transition-colors ${isDarkMode ? 'hover:text-slate-300' : 'hover:text-slate-700'}`}>Privacy Policy</a>
+          <a href="#" className={`transition-colors ${isDarkMode ? 'hover:text-slate-300' : 'hover:text-slate-700'}`}>Terms of Service</a>
+          <a href="#" className={`transition-colors ${isDarkMode ? 'hover:text-slate-300' : 'hover:text-slate-700'}`}>Acceptable Use</a>
+        </div>
+      </footer>
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: ${isDarkMode ? '#475569' : '#cbd5e1'}; border-radius: 4px; }
         ${EXPORT_STYLES}
-        .node:hover > rect, .node:hover > circle { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); stroke-width: 2px !important; stroke: #3b82f6 !important; }
+        .node:hover > rect, .node:hover > circle { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); stroke-width: 2px !important; stroke: ${isDarkMode ? '#6366f1' : '#3b82f6'} !important; }
       `}} />
     </div>
   );
@@ -628,10 +721,23 @@ class ErrorBoundary extends React.Component {
 }
 
 export default function App() {
+  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  if (!PUBLISHABLE_KEY) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50 p-4">
+         <div className="p-6 text-center text-red-600 font-bold border border-red-200 bg-red-50 rounded-2xl shadow-sm text-sm">
+            <AlertTriangle className="mx-auto mb-2 w-8 h-8"/>Missing Clerk Publishable Key in environment variables!
+         </div>
+      </div>
+    );
+  }
+  
   return (
     <ErrorBoundary>
-      <Analytics />
-      <MainApp />
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <Analytics />
+        <MainApp />
+      </ClerkProvider>
     </ErrorBoundary>
   );
 }
