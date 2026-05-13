@@ -542,10 +542,23 @@ function MainApp() {
                   {inputMode === 'url' ? (
                     <input type="text" value={urlInput} onChange={e => { setUrlInput(e.target.value); setInputError(''); }} placeholder="Enter a GitHub Repo URL, raw link, or ANY public webpage..." className={`w-full px-5 py-4 md:px-6 md:py-5 border rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-medium transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:bg-slate-900 focus:border-indigo-500' : 'bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-400'}`} onKeyDown={e => e.key === 'Enter' && handleAnalyze()} />
                   ) : (
-                    <div className="space-y-4 md:space-y-6">
-                      <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center cursor-pointer transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
-                        <input type="file" multiple webkitdirectory="true" className="hidden" id="file-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
-                        <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center"><Upload size={24} className="text-slate-400 mb-2" /><span className={`text-xs md:text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Drag & Drop files or Browse Folders</span></label>
+                    <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
+                        <Upload size={24} className="text-slate-400 mx-auto mb-3" />
+                        <span className={`block text-xs md:text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Drag & Drop files or folders here</span>
+                        
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                          {/* Button 1: Individual Files */}
+                          <input type="file" multiple className="hidden" id="file-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
+                          <label htmlFor="file-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-white' : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-700'}`}>
+                            Browse Files
+                          </label>
+                          
+                          {/* Button 2: Entire Folders */}
+                          <input type="file" multiple webkitdirectory="true" className="hidden" id="folder-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
+                          <label htmlFor="folder-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-indigo-600 border-indigo-500 hover:bg-indigo-500 text-white' : 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700'}`}>
+                            Browse Folder
+                          </label>
+                        </div>
                       </div>
                       <div className="max-h-48 md:max-h-64 overflow-y-auto space-y-3 custom-scroll pr-2">
                         {localFiles.map((file) => (
