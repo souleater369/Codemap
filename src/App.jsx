@@ -55,7 +55,7 @@ const loadMermaid = () => {
         startOnLoad: false, 
         theme: 'base', 
         securityLevel: 'loose',
-        useMaxWidth: false, // THE FIX: Prevents tiny squished maps on initial load
+        useMaxWidth: false, // Prevents tiny squished maps on load
         flowchart: { htmlLabels: true, curve: 'basis', padding: 20, nodeSpacing: 60, rankSpacing: 70 }
       });
       resolve(window.mermaid);
@@ -76,43 +76,17 @@ const EXPORT_STYLES = `
   foreignObject { overflow: visible !important; }
 `;
 
-// --- FULLY RESTORED PERSONALITIES ---
 const getErrorTheme = (baseError) => {
   const errStr = String(baseError).toLowerCase();
   const isCORS = errStr.includes("cors") || errStr.includes("fetch") || errStr.includes("network");
   const isMermaid = errStr.includes("mermaid");
   
   const themes = [
-    {
-      type: 'professional', icon: '🛡️', title: 'Access Restricted',
-      msg: isMermaid ? "The rendering engine failed to parse the AI's data structure." : (isCORS ? "The target server actively refused the connection due to strict security policies." : "The AI pipeline returned a malformed data structure."),
-      steps: ["Acknowledge network security block.", "Switch input mode to 'Local Files / Snippets'.", "Manually upload the source code or copy-paste the text.", "Re-initialize the analysis."],
-      styles: { border: 'border-slate-300', text: 'text-slate-800', bgLight: 'bg-slate-100', bgBtn: 'bg-slate-800', hover: 'hover:bg-slate-900' }
-    },
-    {
-      type: 'detective', icon: '🕵️‍♂️', title: 'Dead End Reached',
-      msg: isCORS ? "Looks like the website has an anti-bot security perimeter. We can't sneak past their CORS headers." : "The AI's logic engine tripped over an unexpected anomaly in the code.",
-      steps: ["Switch to manual extraction mode.", "Go directly to the target website in a new tab.", "Copy the raw text into your clipboard.", "Drop it in the Local Snippets tab to bypass their firewall."],
-      styles: { border: 'border-amber-200', text: 'text-amber-900', bgLight: 'bg-amber-50', bgBtn: 'bg-amber-700', hover: 'hover:bg-amber-800' }
-    },
-    {
-      type: 'cute', icon: '🥺🐾', title: 'Oopsie Daisies!',
-      msg: isCORS ? "The grumpy internet guards won't let us peek at that link! Most websites block automated bots to protect their data." : "Our AI got a little confused trying to read that code.",
-      steps: ["Don't worry!", "Click the 'Local Files / Snippets' tab.", "Copy and paste your code directly into the box.", "Try generating again! ✨"],
-      styles: { border: 'border-pink-200', text: 'text-pink-800', bgLight: 'bg-pink-50', bgBtn: 'bg-pink-500', hover: 'hover:bg-pink-600' }
-    },
-    {
-      type: 'zen', icon: '🧘‍♂️', title: 'A Blocked Path',
-      msg: isCORS ? "The river of data from that link does not flow here. The website has built a wall." : "The mind of the AI could not find structure in the chaos of that code.",
-      steps: ["Breathe in.", "Copy the text from your source.", "Paste it into the Local Snippets sanctuary.", "Let the architecture reveal itself."],
-      styles: { border: 'border-emerald-200', text: 'text-emerald-800', bgLight: 'bg-emerald-50', bgBtn: 'bg-emerald-600', hover: 'hover:bg-emerald-700' }
-    },
-    {
-      type: 'techbro', icon: '🚀', title: 'Blocker Detected!',
-      msg: isCORS ? "Bro, their server just straight-up denied our GET request. CORS policies are blocking our hustle." : "The LLM hallucinated the JSON schema. Bad prompt output.",
-      steps: ["Pivot your strategy.", "Hit the 'Local Files' tab.", "Hardcode paste your snippets.", "Ship the map! 🚢"],
-      styles: { border: 'border-blue-200', text: 'text-blue-900', bgLight: 'bg-blue-50', bgBtn: 'bg-blue-600', hover: 'hover:bg-blue-700' }
-    }
+    { type: 'professional', icon: '🛡️', title: 'Access Restricted', msg: isMermaid ? "The rendering engine failed to parse the AI's data structure." : (isCORS ? "The target server actively refused the connection due to strict security policies." : "The AI pipeline returned a malformed data structure."), steps: ["Acknowledge network security block.", "Switch input mode to 'Local Files / Snippets'.", "Manually upload the source code.", "Re-initialize the analysis."], styles: { border: 'border-slate-300', text: 'text-slate-800', bgLight: 'bg-slate-100', bgBtn: 'bg-slate-800', hover: 'hover:bg-slate-900' } },
+    { type: 'detective', icon: '🕵️‍♂️', title: 'Dead End Reached', msg: isCORS ? "Looks like the website has an anti-bot security perimeter. We can't sneak past their CORS headers." : "The AI's logic engine tripped over an unexpected anomaly in the code.", steps: ["Switch to manual extraction mode.", "Go directly to the target website in a new tab.", "Copy the raw text into your clipboard.", "Drop it in the Local Snippets tab to bypass their firewall."], styles: { border: 'border-amber-200', text: 'text-amber-900', bgLight: 'bg-amber-50', bgBtn: 'bg-amber-700', hover: 'hover:bg-amber-800' } },
+    { type: 'cute', icon: '🥺🐾', title: 'Oopsie Daisies!', msg: isCORS ? "The grumpy internet guards won't let us peek at that link! Most websites block automated bots to protect their data." : "Our AI got a little confused trying to read that code.", steps: ["Don't worry!", "Click the 'Local Files / Snippets' tab.", "Copy and paste your code directly into the box.", "Try generating again! ✨"], styles: { border: 'border-pink-200', text: 'text-pink-800', bgLight: 'bg-pink-50', bgBtn: 'bg-pink-500', hover: 'hover:bg-pink-600' } },
+    { type: 'zen', icon: '🧘‍♂️', title: 'A Blocked Path', msg: isCORS ? "The river of data from that link does not flow here. The website has built a wall." : "The mind of the AI could not find structure in the chaos of that code.", steps: ["Breathe in.", "Copy the text from your source.", "Paste it into the Local Snippets sanctuary.", "Let the architecture reveal itself."], styles: { border: 'border-emerald-200', text: 'text-emerald-800', bgLight: 'bg-emerald-50', bgBtn: 'bg-emerald-600', hover: 'hover:bg-emerald-700' } },
+    { type: 'techbro', icon: '🚀', title: 'Blocker Detected!', msg: isCORS ? "Bro, their server just straight-up denied our GET request. CORS policies are blocking our hustle." : "The LLM hallucinated the JSON schema. Bad prompt output.", steps: ["Pivot your strategy.", "Hit the 'Local Files' tab.", "Hardcode paste your snippets.", "Ship the map! 🚢"], styles: { border: 'border-blue-200', text: 'text-blue-900', bgLight: 'bg-blue-50', bgBtn: 'bg-blue-600', hover: 'hover:bg-blue-700' } }
   ];
   return themes[Math.floor(Math.random() * themes.length)];
 };
@@ -120,9 +94,8 @@ const getErrorTheme = (baseError) => {
 function MainApp() {
   const { userId } = useAuth(); 
   
-  // Theme & Layout State
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [layoutDir, setLayoutDir] = useState('TD'); // TD = Top-Down, LR = Left-Right
+  const [layoutDir, setLayoutDir] = useState('TD');
 
   const [localHistory, setLocalHistory] = useState([]);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
@@ -153,7 +126,6 @@ function MainApp() {
 
   useEffect(() => { loadMermaid().catch(() => {}); }, []);
 
-  // Regenerate Map when Theme or Layout Direction Changes
   useEffect(() => {
     if (architecture) generateMermaid(architecture);
   }, [isDarkMode, layoutDir, architecture]);
@@ -275,7 +247,6 @@ function MainApp() {
       setStatus('analyzing');
       setStatusMessage('AI is constructing the architecture map...');
 
-      // UPGRADE: Max Node Limit Increased to 30
       const prompt = `Analyze these source files/text. Extract core architecture: classes, functions, relationships.
       Keep to max 30 significant nodes. Strict JSON only format:
       {"nodes":[{"id":"n1","label":"Func","type":"function","file":"path","complexity":5,"code_snippet":"...","description":"...","returns":"...","ui_design":"...","userComment":""}],"edges":[{"source":"n1","target":"n2"}]}
@@ -308,9 +279,8 @@ function MainApp() {
   const generateMermaid = useCallback((data) => {
     if (!data?.nodes) return;
     
-    // Theming Engine Injection
     let m = `%%{init: {'theme': '${isDarkMode ? 'dark' : 'base'}', 'themeVariables': { 'fontFamily': 'Inter, sans-serif', 'primaryColor': '${isDarkMode ? '#0f172a' : '#ffffff'}', 'primaryTextColor': '${isDarkMode ? '#f8fafc' : '#0f172a'}', 'lineColor': '${isDarkMode ? '#475569' : '#94a3b8'}' }}}%%\n`;
-    m += `graph ${layoutDir};\n`; // Applies the Top-Down or Left-Right layout
+    m += `graph ${layoutDir};\n`; 
 
     const files = [...new Set(data.nodes.map(n => n.file || 'Unknown'))];
     const nodeBg = isDarkMode ? '#1e293b' : '#ffffff';
@@ -358,6 +328,15 @@ function MainApp() {
         if (isCancelled) return;
         
         mapContentRef.current.innerHTML = svg;
+        
+        // UNRESTRICTED SIZE FIX
+        const renderedSvg = mapContentRef.current.querySelector('svg');
+        if (renderedSvg) {
+          renderedSvg.style.maxWidth = 'none';
+          renderedSvg.style.height = 'auto';
+          renderedSvg.removeAttribute('width');
+        }
+
         mapContentRef.current.querySelectorAll('.node').forEach(n => {
           n.style.cursor = 'pointer';
           n.addEventListener('click', () => {
@@ -398,7 +377,6 @@ function MainApp() {
     finally { setIsRefactoring(false); }
   };
 
-  // The Bulletproof, High-Res Exporter
   const exportMap = (type) => {
     setExportMenuOpen(false);
     if (!mapContentRef.current) return;
@@ -429,8 +407,20 @@ function MainApp() {
     const style = document.createElement('style'); style.textContent = EXPORT_STYLES;
     cloned.insertBefore(style, cloned.firstChild);
     
-    const bbox = svgEl.getBoundingClientRect();
-    cloned.setAttribute('width', bbox.width); cloned.setAttribute('height', bbox.height);
+    // 4K HIGH RES FIX: Extract true viewBox dimensions
+    const viewBox = svgEl.getAttribute('viewBox');
+    let baseWidth = 1200, baseHeight = 800;
+    
+    if (viewBox) {
+      const dims = viewBox.split(' ').map(Number);
+      baseWidth = dims[2]; baseHeight = dims[3];
+    } else {
+      const bbox = svgEl.getBoundingClientRect();
+      baseWidth = bbox.width; baseHeight = bbox.height;
+    }
+
+    cloned.setAttribute('width', baseWidth); 
+    cloned.setAttribute('height', baseHeight);
     if (!cloned.getAttribute('xmlns')) cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
     const svgData = new XMLSerializer().serializeToString(cloned);
@@ -438,18 +428,17 @@ function MainApp() {
     
     if (type === 'svg') return triggerDownload(svgUrl, 'architecture.svg');
     
-    showToast("Compiling High-Res PNG...", 'info');
+    showToast("Compiling 4K High-Res PNG...", 'info');
     const img = new Image(); 
     
     img.onload = () => {
       try {
-        // THE HIGH-RES FIX: Multiplies canvas scale by 3 for crystal clear PNGs!
-        const scale = 3; 
+        const scale = 4; // 4X QUALITY MULTIPLIER
         const cvs = document.createElement('canvas'); 
         const ctx = cvs.getContext('2d');
         
-        cvs.width = bbox.width * scale; 
-        cvs.height = bbox.height * scale;
+        cvs.width = baseWidth * scale; 
+        cvs.height = baseHeight * scale;
         
         ctx.fillStyle = isDarkMode ? "#0f172a" : "#f8fafc"; 
         ctx.fillRect(0, 0, cvs.width, cvs.height);
@@ -471,7 +460,6 @@ function MainApp() {
 
   const selectedNode = architecture?.nodes?.find(n => n.id === selectedNodeId);
 
-  // Core Render
   return (
     <div className={`flex flex-col h-screen font-sans overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
@@ -497,7 +485,6 @@ function MainApp() {
         )}
 
         <div className="flex items-center space-x-1 sm:space-x-2">
-          {/* THE CREATIVE UPGRADE: Theme Toggler */}
           <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 sm:px-3 sm:py-2 rounded-full font-medium transition-colors ${isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
             {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
@@ -542,24 +529,22 @@ function MainApp() {
                   {inputMode === 'url' ? (
                     <input type="text" value={urlInput} onChange={e => { setUrlInput(e.target.value); setInputError(''); }} placeholder="Enter a GitHub Repo URL, raw link, or ANY public webpage..." className={`w-full px-5 py-4 md:px-6 md:py-5 border rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-medium transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:bg-slate-900 focus:border-indigo-500' : 'bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-400'}`} onKeyDown={e => e.key === 'Enter' && handleAnalyze()} />
                   ) : (
-                    <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
+                    <div className="space-y-4 md:space-y-6">
+                      
+                      {/* DUAL BUTTON UPLOAD ZONE */}
+                      <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
                         <Upload size={24} className="text-slate-400 mx-auto mb-3" />
                         <span className={`block text-xs md:text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Drag & Drop files or folders here</span>
                         
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                          {/* Button 1: Individual Files */}
                           <input type="file" multiple className="hidden" id="file-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
-                          <label htmlFor="file-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-white' : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-700'}`}>
-                            Browse Files
-                          </label>
+                          <label htmlFor="file-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-white' : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-700'}`}>Browse Files</label>
                           
-                          {/* Button 2: Entire Folders */}
                           <input type="file" multiple webkitdirectory="true" className="hidden" id="folder-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
-                          <label htmlFor="folder-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-indigo-600 border-indigo-500 hover:bg-indigo-500 text-white' : 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700'}`}>
-                            Browse Folder
-                          </label>
+                          <label htmlFor="folder-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-indigo-600 border-indigo-500 hover:bg-indigo-500 text-white' : 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700'}`}>Browse Folder</label>
                         </div>
                       </div>
+
                       <div className="max-h-48 md:max-h-64 overflow-y-auto space-y-3 custom-scroll pr-2">
                         {localFiles.map((file) => (
                           <div key={file.id} className={`border rounded-xl flex flex-col overflow-hidden ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
@@ -612,7 +597,6 @@ function MainApp() {
               
               <div className={`w-px h-5 mx-1 my-auto ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
               
-              {/* THE CREATIVE UPGRADE: Layout Toggler */}
               <button onClick={() => setLayoutDir(layoutDir === 'TD' ? 'LR' : 'TD')} className={`p-1.5 rounded-lg font-bold text-[10px] flex items-center ${isDarkMode ? 'hover:bg-slate-800 text-indigo-400' : 'hover:bg-slate-100 text-blue-600'}`}>
                 {layoutDir === 'TD' ? <ArrowRightLeft size={16}/> : <ArrowDownUp size={16}/>}
               </button>
@@ -745,7 +729,6 @@ class ErrorBoundary extends React.Component {
 }
 
 export default function App() {
-  // CLEAN AND CRASH-FREE
   return (
     <ErrorBoundary>
       <Analytics />
@@ -753,6 +736,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-
-
-
