@@ -148,7 +148,7 @@ function MainApp() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(localHistory));
     const node = document.createElement('a');
     node.setAttribute("href", dataStr);
-    node.setAttribute("download", `codemap_vault_${new Date().toISOString().split('T')[0]}.json`);
+    node.setAttribute("download", `repovue_vault_${new Date().toISOString().split('T')[0]}.json`);
     document.body.appendChild(node); node.click(); node.remove();
   };
 
@@ -329,12 +329,11 @@ function MainApp() {
         
         mapContentRef.current.innerHTML = svg;
         
-        // UNRESTRICTED SIZE FIX
+        // UNRESTRICTED MAP SIZE FIX
         const renderedSvg = mapContentRef.current.querySelector('svg');
         if (renderedSvg) {
           renderedSvg.style.maxWidth = 'none';
-          renderedSvg.style.height = 'auto';
-          renderedSvg.removeAttribute('width');
+          // Width attribute remains untouched so the map renders massively on screen.
         }
 
         mapContentRef.current.querySelectorAll('.node').forEach(n => {
@@ -516,10 +515,10 @@ function MainApp() {
       <div className="flex flex-1 overflow-hidden relative">
         <div className={`flex-1 relative overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-50'}`} onWheel={e => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - e.deltaY * 0.001) }))} onMouseDown={e => { setIsDragging(true); setDragStart({ x: e.clientX - transform.x, y: e.clientY - transform.y }); }} onMouseMove={e => isDragging && setTransform(p => ({ ...p, x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }))} onMouseUp={() => setIsDragging(false)} onMouseLeave={() => setIsDragging(false)}>
           
-          {/* Main Input Screen */}
+          {/* THE MOBILE SCROLL FIX IS HERE */}
           {status === 'idle' && (
-            <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto custom-scroll ${isDarkMode ? 'bg-slate-950/90' : 'bg-slate-50/90'} backdrop-blur-sm`}>
-              <div className={`w-full max-w-2xl rounded-2xl md:rounded-[2rem] shadow-2xl border overflow-hidden shrink-0 my-auto ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <div className={`absolute inset-0 z-10 flex flex-col items-center p-4 sm:p-6 lg:p-8 overflow-y-auto custom-scroll sm:justify-center ${isDarkMode ? 'bg-slate-950/90' : 'bg-slate-50/90'} backdrop-blur-sm`}>
+              <div className={`w-full max-w-2xl rounded-2xl md:rounded-[2rem] shadow-2xl border overflow-hidden shrink-0 mt-8 mb-16 sm:my-auto ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
                 <div className={`flex border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                   <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'url' ? (isDarkMode ? 'bg-slate-900 shadow-sm text-white' : 'bg-white shadow-sm text-slate-900') : 'text-slate-500'}`} onClick={() => setInputMode('url')}><Link size={14} className="inline mr-1" /> Web Links</button>
                   <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'local' ? (isDarkMode ? 'bg-slate-900 shadow-sm text-white' : 'bg-white shadow-sm text-slate-900') : 'text-slate-500'}`} onClick={() => setInputMode('local')}><Code size={14} className="inline mr-1" /> Local Snippets</button>
