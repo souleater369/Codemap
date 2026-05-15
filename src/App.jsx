@@ -475,7 +475,7 @@ function MainApp() {
       <header className={`flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b z-10 shadow-sm shrink-0 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center space-x-2 md:space-x-3">
           <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-white'}`}><GitBranch size={18} strokeWidth={2.5} /></div>
-          <div><h1 className="text-base md:text-lg font-bold">CodeMap</h1><p className="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest hidden sm:block">Visualizer</p></div>
+          <div><h1 className="text-base md:text-lg font-bold">RepoGraph</h1><p className="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest hidden sm:block">Visualizer</p></div>
         </div>
 
         {status !== 'idle' && (
@@ -690,7 +690,7 @@ function MainApp() {
       {/* --- SAAS FOOTER --- */}
       <footer className={`w-full border-t py-3 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between text-[10px] font-medium z-10 shrink-0 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
         <div className="mb-2 sm:mb-0">
-          © {new Date().getFullYear()} CodeMap Visualizer. All rights reserved.
+          © {new Date().getFullYear()} RepoGraph Visualizer. All rights reserved.
         </div>
         <div className="flex space-x-4">
           <a href="#" className={`transition-colors ${isDarkMode ? 'hover:text-slate-300' : 'hover:text-slate-700'}`}>Privacy Policy</a>
