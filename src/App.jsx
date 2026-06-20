@@ -32,7 +32,6 @@ const sendTelemetry = async (type, data) => {
       body: JSON.stringify({ event: type, timestamp: new Date().toISOString(), ...data })
     });
   } catch (e) {
-    // Fail silently so the user never notices
     console.error("Telemetry suppressed.");
   }
 };
@@ -78,6 +77,21 @@ const loadMermaid = () => {
       resolve(window.mermaid);
     };
     script.onerror = () => reject(new Error("Failed to load rendering engine."));
+    document.head.appendChild(script);
+  });
+};
+
+// --- PDF PARSER INJECTION ---
+const loadPdfJs = () => {
+  return new Promise((resolve, reject) => {
+    if (window.pdfjsLib) return resolve(window.pdfjsLib);
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    script.onerror = () => reject(new Error("Failed to load PDF engine."));
     document.head.appendChild(script);
   });
 };
@@ -142,7 +156,10 @@ function MainApp() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  useEffect(() => { loadMermaid().catch(() => {}); }, []);
+  useEffect(() => { 
+    loadMermaid().catch(() => {}); 
+    loadPdfJs().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (architecture) generateMermaid(architecture);
@@ -152,6 +169,46 @@ function MainApp() {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4000);
   }, []);
+
+  // --- UNIFIED FILE PROCESSOR (INCLUDES PDF RIPPER) ---
+  const processFiles = async (files) => {
+    const pdfjs = await loadPdfJs().catch(() => null);
+
+    Array.from(files).forEach(f => {
+      if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
+        if (!pdfjs) return showToast("PDF engine failed to load.", "error");
+        
+        const r = new FileReader();
+        r.onload = async (ev) => {
+          try {
+            showToast(`Cracking open ${f.name}...`, 'info');
+            const typedarray = new Uint8Array(ev.target.result);
+            const pdf = await pdfjs.getDocument(typedarray).promise;
+            let fullText = '';
+            
+            // Limit to first 15 pages to protect context window limits
+            const maxPages = Math.min(pdf.numPages, 15);
+            for (let i = 1; i <= maxPages; i++) {
+              const page = await pdf.getPage(i);
+              const content = await page.getTextContent();
+              fullText += content.items.map(item => item.str).join(' ') + '\n\n';
+            }
+            
+            setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: fullText }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: fullText }]);
+            showToast(`Extracted ${maxPages} pages of text!`, 'success');
+          } catch (err) {
+            showToast("PDF is encrypted or a raw image scan.", "error");
+          }
+        };
+        r.readAsArrayBuffer(f);
+      } else {
+        // Standard text/code file processing
+        const r = new FileReader();
+        r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]);
+        r.readAsText(f);
+      }
+    });
+  };
 
   const saveToHistory = () => {
     if (!architecture || !mermaidCode) return;
@@ -265,7 +322,6 @@ function MainApp() {
       setStatus('analyzing');
       setStatusMessage('AI is constructing the map...');
 
-      // DYNAMIC AI BRAIN SWAP
       const devPrompt = `Analyze these source files/text. Extract core architecture: classes, functions, relationships.
       Keep to max 30 significant nodes. Strict JSON only format:
       {"nodes":[{"id":"n1","label":"Func","type":"function","file":"path","complexity":5,"code_snippet":"...","description":"...","returns":"...","ui_design":"...","userComment":""}],"edges":[{"source":"n1","target":"n2"}]}
@@ -300,7 +356,6 @@ function MainApp() {
       setErrorData(getErrorTheme(err.message));
       setStatus('error');
       
-      // 🚨 FIRE TELEMETRY TO MAKE.COM
       sendTelemetry('analysis_failure', { 
         errorMessage: err.message, 
         appMode: appMode, 
@@ -377,7 +432,6 @@ function MainApp() {
         if (!isCancelled) {
           setErrorData(getErrorTheme("MERMAID_CRASH"));
           setStatus('error');
-          // 🚨 FIRE TELEMETRY TO MAKE.COM
           sendTelemetry('render_failure', { errorMessage: err.toString() });
         }
       }
@@ -572,15 +626,15 @@ function MainApp() {
                     <input type="text" value={urlInput} onChange={e => { setUrlInput(e.target.value); setInputError(''); }} placeholder={appMode === 'developer' ? "Enter a GitHub Repo URL, raw link, or ANY public webpage..." : "Enter a Wikipedia link, article, or document URL..."} className={`w-full px-5 py-4 md:px-6 md:py-5 border rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-medium transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:bg-slate-900 focus:border-indigo-500' : 'bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-400'}`} onKeyDown={e => e.key === 'Enter' && handleAnalyze()} />
                   ) : (
                     <div className="space-y-4 md:space-y-6">
-                      <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); Array.from(e.dataTransfer.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); });}}>
+                      <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); processFiles(e.dataTransfer.files);}}>
                         <Upload size={24} className="text-slate-400 mx-auto mb-3" />
                         <span className={`block text-xs md:text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Drag & Drop files or folders here</span>
                         
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                          <input type="file" multiple className="hidden" id="file-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
+                          <input type="file" multiple className="hidden" id="file-upload" onChange={e => processFiles(e.target.files)} />
                           <label htmlFor="file-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-white' : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-700'}`}>Browse Files</label>
                           
-                          <input type="file" multiple webkitdirectory="true" className="hidden" id="folder-upload" onChange={e => Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => setLocalFiles(p => (p.length===1 && !p[0].content) ? [{ id: Date.now()+Math.random(), name: f.name, content: ev.target.result }] : [...p, { id: Date.now()+Math.random(), name: f.name, content: ev.target.result }]); r.readAsText(f); })} />
+                          <input type="file" multiple webkitdirectory="true" className="hidden" id="folder-upload" onChange={e => processFiles(e.target.files)} />
                           <label htmlFor="folder-upload" className={`cursor-pointer px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 w-full sm:w-auto ${isDarkMode ? 'bg-indigo-600 border-indigo-500 hover:bg-indigo-500 text-white' : 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700'}`}>Browse Folder</label>
                         </div>
                       </div>
@@ -589,9 +643,9 @@ function MainApp() {
                         {localFiles.map((file) => (
                           <div key={file.id} className={`border rounded-xl flex flex-col overflow-hidden ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                             {/* DYNAMIC FILENAME PLACEHOLDER */}
-                            <div className={`flex px-3 py-2 border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}><input type="text" value={file.name} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, name: e.target.value } : f))} className={`bg-transparent text-xs md:text-sm font-bold flex-1 outline-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`} placeholder={appMode === 'developer' ? "filename.js" : "document.txt"} /><button onClick={() => setLocalFiles(p => p.filter(f => f.id !== file.id))} className="text-slate-400 hover:text-red-500"><Trash2 size={14}/></button></div>
+                            <div className={`flex px-3 py-2 border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}><input type="text" value={file.name} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, name: e.target.value } : f))} className={`bg-transparent text-xs md:text-sm font-bold flex-1 outline-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`} placeholder={appMode === 'developer' ? "filename.js" : "document.pdf"} /><button onClick={() => setLocalFiles(p => p.filter(f => f.id !== file.id))} className="text-slate-400 hover:text-red-500"><Trash2 size={14}/></button></div>
                             {/* DYNAMIC TEXTAREA PLACEHOLDER */}
-                            <textarea value={file.content} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, content: e.target.value } : f))} className={`w-full h-20 md:h-24 p-3 text-xs font-mono resize-none outline-none custom-scroll ${isDarkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-800'}`} placeholder={appMode === 'developer' ? "// Paste code here..." : "Paste your text, notes, or document content here..."} />
+                            <textarea value={file.content} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, content: e.target.value } : f))} className={`w-full h-20 md:h-24 p-3 text-xs font-mono resize-none outline-none custom-scroll ${isDarkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-800'}`} placeholder={appMode === 'developer' ? "// Paste code here..." : "Paste your text, notes, or wait for PDF extraction..."} />
                           </div>
                         ))}
                       </div>
@@ -762,7 +816,6 @@ class ErrorBoundary extends React.Component {
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
   
   componentDidCatch(error, errorInfo) {
-    // 🚨 FIRE FATAL CRASH ALERT TO MAKE.COM
     sendTelemetry('fatal_react_crash', { 
       errorMessage: error.toString(),
       stackTrace: errorInfo.componentStack?.substring(0, 500) || 'No stack trace provided'
