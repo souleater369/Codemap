@@ -6,7 +6,7 @@ import {
   AlertTriangle, Maximize, Loader2, Camera, Palette, 
   Trash2, Upload, Info, HardDrive, DownloadCloud, 
   UploadCloud, Heart, X, History, Save, Download, FileText, Zap, 
-  MessageSquare, Moon, Sun, ArrowRightLeft, ArrowDownUp, Share2
+  MessageSquare, Moon, Sun, ArrowRightLeft, ArrowDownUp, Share2, Menu
 } from 'lucide-react';
 
 // --- SUPABASE IMPORT ---
@@ -46,8 +46,7 @@ const TIP_JAR_LINK = "https://ko-fi.com/isshhan";
 const extractJSON = (text) => {
   if (!text) throw new Error("AI_PARSE_ERROR_EMPTY");
   try {
-    const match = text.match(/```json\n([\s\S]*?)\n
-```/);
+    const match = text.match(/```json\n([\s\S]*?)\n```/);
     if (match) return JSON.parse(match[1]);
     const start = text.indexOf('{');
     const end = text.lastIndexOf('}');
@@ -131,6 +130,7 @@ function MainApp() {
 
   const [localHistory, setLocalHistory] = useState([]);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile Menu State
   const importFileRef = useRef(null);
 
   const [inputMode, setInputMode] = useState('url');
@@ -151,7 +151,7 @@ function MainApp() {
   const [refactorSuggestion, setRefactorSuggestion] = useState(null);
   const [isRefactoring, setIsRefactoring] = useState(false);
   
-  const [isSharing, setIsSharing] = useState(false); // Share state
+  const [isSharing, setIsSharing] = useState(false); 
 
   const mapContentRef = useRef(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
@@ -172,7 +172,6 @@ function MainApp() {
     setTimeout(() => setToast(null), 4000);
   }, []);
 
-  // --- UNIFIED FILE PROCESSOR (INCLUDES PDF RIPPER) ---
   const processFiles = async (files) => {
     const pdfjs = await loadPdfJs().catch(() => null);
 
@@ -210,7 +209,6 @@ function MainApp() {
     });
   };
 
-  // --- VIRAL SHARE ENGINE ---
   const handleShareMap = async () => {
     if (!architecture || !mermaidCode) return showToast("Generate a map first!", "error");
     setIsSharing(true);
@@ -218,7 +216,6 @@ function MainApp() {
     try {
       const title = inputMode === 'url' ? urlInput.split('/').pop() || 'Shared Map' : (appMode === 'developer' ? 'Code Architecture' : 'Knowledge Map');
       
-      // Generate a clean 9-character alphanumeric ID for the URL
       const uniqueId = Math.random().toString(36).substring(2, 11);
       
       const { error } = await supabase
@@ -454,7 +451,13 @@ function MainApp() {
         
         const renderedSvg = mapContentRef.current.querySelector('svg');
         if (renderedSvg) {
-          renderedSvg.style.maxWidth = 'none';
+          // FIX: Force the tiny map to scale up fully within the container
+          renderedSvg.removeAttribute('width');
+          renderedSvg.removeAttribute('height');
+          renderedSvg.style.width = '100%';
+          renderedSvg.style.height = '100%';
+          renderedSvg.style.minWidth = '800px'; 
+          renderedSvg.style.minHeight = '600px';
         }
 
         mapContentRef.current.querySelectorAll('.node').forEach(n => {
@@ -590,68 +593,94 @@ function MainApp() {
       {toast && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 w-[90%] md:w-auto">
           <div className={`px-4 md:px-5 py-3 rounded-full shadow-lg border flex items-center space-x-2 text-xs md:text-sm font-semibold ${toast.type === 'error' ? 'bg-red-950 border-red-800 text-red-200' : toast.type === 'warning' ? 'bg-amber-950 border-amber-800 text-amber-200' : toast.type === 'success' ? 'bg-green-950 border-green-800 text-green-200' : (isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white')}`}>
-            {toast.type === 'error' ? <AlertTriangle size="{16}"/> : <Info size="{16}"/>}
+            {toast.type === 'error' ? <AlertTriangle size={16}/> : <Info size={16}/>}
             <span className="truncate">{toast.msg}</span>
           </div>
         </div>
       )}
 
-      <header className={`flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b z-10 shadow-sm shrink-0 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+      {/* --- REBUILT RESPONSIVE HEADER --- */}
+      <header className={`flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b z-30 relative shadow-sm shrink-0 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+        {/* LOGO */}
         <div className="flex items-center space-x-2 md:space-x-3">
-          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-white'}`}><GitBranch size="{18}" strokeWidth="{2.5}"/></div>
+          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-white'}`}><GitBranch size={18} strokeWidth={2.5} /></div>
           <div><h1 className="text-base md:text-lg font-bold">RepoVue</h1><p className="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest hidden sm:block">Visualizer</p></div>
         </div>
 
-        
-        <div className={`hidden md:flex items-center p-1 rounded-full border mx-auto ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+        {/* DESKTOP MIDDLE NAVIGATION */}
+        <div className={`hidden lg:flex items-center p-1 rounded-full border mx-auto ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
           <button onClick={() => setAppMode('developer')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${appMode === 'developer' ? (isDarkMode ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 shadow-sm') : 'text-slate-500 hover:text-slate-400'}`}>💻 Developer Mode</button>
           <button onClick={() => setAppMode('knowledge')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${appMode === 'knowledge' ? (isDarkMode ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 shadow-sm') : 'text-slate-500 hover:text-slate-400'}`}>🧠 Knowledge Mode</button>
         </div>
 
-        {status !== 'idle' && (
-          <button onClick={() => { setStatus('idle'); setSelectedNodeId(null); setTransform({x:0,y:0,scale:1}); }} className={`hidden md:flex items-center px-5 py-2.5 rounded-full border shadow-sm font-semibold mx-auto transition-all active:scale-95 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-            <Plus size="{16}" className="mr-2"/><span className="text-sm">New Map</span>
-          </button>
-        )}
-
-        <div className="flex items-center space-x-1 sm:space-x-2">
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 sm:px-3 sm:py-2 rounded-full font-medium transition-colors ${isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-            {isDarkMode ? <Sun size="{16}"/> : <Moon size="{16}"/>}
-          </button>
-
-          <button onClick={() => setHistorySidebarOpen(true)} className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-medium text-xs sm:text-sm ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}><History size="{16}"/><span className="hidden sm:inline sm:ml-2">Vault</span></button>
+        {/* RIGHT SIDE ALIGNMENT */}
+        <div className="flex items-center space-x-2">
           
-          
-          {status === 'ready' && (
-            <>
-              <button onClick={handleShareMap} disabled={isSharing} className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm disabled:opacity-50 transition-colors ${isDarkMode ? 'bg-emerald-900 text-emerald-300 hover:bg-emerald-800' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
-                {isSharing ? <Loader2 size="{16}" className="animate-spin"/> : <Share2 size="{16}"/>}
-                <span className="hidden sm:inline sm:ml-2">Share</span>
-              </button>
-              <button onClick={saveToHistory} className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm transition-colors ${isDarkMode ? 'bg-indigo-900 text-indigo-300 hover:bg-indigo-800' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>
-                <Save size="{16}"/><span className="hidden sm:inline sm:ml-2">Save</span>
-              </button>
-            </>
-          )}
+          {/* DESKTOP ONLY ACTIONS */}
+          <div className="hidden lg:flex items-center space-x-2">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-full font-medium transition-colors ${isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+              {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button onClick={() => setHistorySidebarOpen(true)} className={`flex items-center px-4 py-2 rounded-full font-medium text-sm ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}><History size={16} /><span className="ml-2">Vault</span></button>
+            
+            {status === 'ready' && (
+              <>
+                <button onClick={handleShareMap} disabled={isSharing} className={`flex items-center px-4 py-2 rounded-full font-bold text-sm disabled:opacity-50 transition-colors ${isDarkMode ? 'bg-emerald-900 text-emerald-300 hover:bg-emerald-800' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
+                  {isSharing ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}<span className="ml-2">Share</span>
+                </button>
+                <button onClick={saveToHistory} className={`flex items-center px-4 py-2 rounded-full font-bold text-sm transition-colors ${isDarkMode ? 'bg-indigo-900 text-indigo-300 hover:bg-indigo-800' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>
+                  <Save size={16} /><span className="ml-2">Save</span>
+                </button>
+                <div className="relative">
+                  <button onClick={() => setExportMenuOpen(!exportMenuOpen)} disabled={status !== 'ready'} className={`flex items-center px-4 py-2 rounded-full disabled:opacity-30 text-sm transition-colors ${isDarkMode ? 'bg-slate-100 text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-slate-800'}`}><Download size={16} /><span className="ml-2">Export</span></button>
+                  {exportMenuOpen && status === 'ready' && (
+                    <div className={`absolute right-0 mt-2 w-48 border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                      <button onClick={() => exportMap('png')} className={`w-full text-left px-4 py-3 text-sm flex items-center border-b ${isDarkMode ? 'hover:bg-slate-700 border-slate-700' : 'hover:bg-slate-50 border-slate-100'}`}><Camera size={16} className="mr-3 text-slate-400" /> PNG</button>
+                      <button onClick={() => exportMap('svg')} className={`w-full text-left px-4 py-3 text-sm flex items-center border-b ${isDarkMode ? 'hover:bg-slate-700 border-slate-700' : 'hover:bg-slate-50 border-slate-100'}`}><Camera size={16} className="mr-3 text-slate-400" /> SVG</button>
+                      <button onClick={() => exportMap('md')} className={`w-full text-left px-4 py-3 text-sm flex items-center ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-50'}`}><FileText size={16} className="mr-3 text-slate-400" /> Markdown</button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            <div className={`w-px h-6 mx-1 ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
+          </div>
 
-          <div className="relative">
-            <button onClick={() => setExportMenuOpen(!exportMenuOpen)} disabled={status !== 'ready'} className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full disabled:opacity-30 text-xs sm:text-sm transition-colors ${isDarkMode ? 'bg-slate-100 text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-slate-800'}`}><Download size="{16}"/><span className="hidden sm:inline sm:ml-2">Export</span></button>
-            {exportMenuOpen && status === 'ready' && (
-              <div className={`absolute right-0 mt-2 w-48 border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                <button onClick={() => exportMap('png')} className={`w-full text-left px-4 py-3 text-sm flex items-center border-b ${isDarkMode ? 'hover:bg-slate-700 border-slate-700' : 'hover:bg-slate-50 border-slate-100'}`}><Camera size="{16}" className="mr-3 text-slate-400"/> PNG</button>
-                <button onClick={() => exportMap('svg')} className={`w-full text-left px-4 py-3 text-sm flex items-center border-b ${isDarkMode ? 'hover:bg-slate-700 border-slate-700' : 'hover:bg-slate-50 border-slate-100'}`}><Camera size="{16}" className="mr-3 text-slate-400"/> SVG</button>
-                <button onClick={() => exportMap('md')} className={`w-full text-left px-4 py-3 text-sm flex items-center ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-50'}`}><FileText size="{16}" className="mr-3 text-slate-400"/> Markdown</button>
+          {/* ALWAYS VISIBLE BUTTONS */}
+          <a href={TIP_JAR_LINK} target="_blank" rel="noopener noreferrer" className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm ${isDarkMode ? 'bg-pink-950 text-pink-400' : 'bg-pink-50 text-pink-600'}`}><Heart size={16} className="fill-red-500" /><span className="hidden sm:inline sm:ml-2">Support</span></a>
+          <SignedOut><SignInButton mode="modal"><button className={`px-3 py-2 sm:px-4 rounded-full font-bold text-xs sm:text-sm transition-colors ${isDarkMode ? 'bg-indigo-500 hover:bg-indigo-400 text-white' : 'bg-slate-900 text-white'}`}>Login</button></SignInButton></SignedOut>
+          <SignedIn><UserButton afterSignOutUrl="/" /></SignedIn>
+
+          {/* MOBILE HAMBURGER MENU BUTTON */}
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`lg:hidden p-2 rounded-lg transition-colors ${isDarkMode ? 'text-white hover:bg-slate-800' : 'text-slate-900 hover:bg-slate-100'}`}>
+            <Menu size={22} />
+          </button>
+        </div>
+
+        {/* MOBILE DROPDOWN MENU */}
+        {mobileMenuOpen && (
+          <div className={`absolute top-full left-0 w-full border-b shadow-xl p-4 flex flex-col space-y-3 z-50 lg:hidden animate-in slide-in-from-top-2 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+            <div className={`flex items-center p-1 rounded-xl border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+              <button onClick={() => { setAppMode('developer'); setMobileMenuOpen(false); }} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appMode === 'developer' ? (isDarkMode ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 shadow-sm') : 'text-slate-500'}`}>💻 Developer</button>
+              <button onClick={() => { setAppMode('knowledge'); setMobileMenuOpen(false); }} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appMode === 'knowledge' ? (isDarkMode ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 shadow-sm') : 'text-slate-500'}`}>🧠 Knowledge</button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { setIsDarkMode(!isDarkMode); setMobileMenuOpen(false); }} className={`flex items-center justify-center p-2.5 rounded-xl font-medium text-xs border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-yellow-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>{isDarkMode ? <Sun size={14} className="mr-2"/> : <Moon size={14} className="mr-2"/>} Theme</button>
+              <button onClick={() => { setHistorySidebarOpen(true); setMobileMenuOpen(false); }} className={`flex items-center justify-center p-2.5 rounded-xl font-medium text-xs border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}><History size={14} className="mr-2"/> Vault</button>
+            </div>
+
+            {status === 'ready' && (
+              <div className={`grid grid-cols-2 gap-2 pt-2 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                <button onClick={() => { handleShareMap(); setMobileMenuOpen(false); }} disabled={isSharing} className={`flex items-center justify-center p-2.5 rounded-xl font-bold text-xs border ${isDarkMode ? 'bg-emerald-900 border-emerald-800 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                  {isSharing ? <Loader2 size={14} className="animate-spin mr-2" /> : <Share2 size={14} className="mr-2" />} Share
+                </button>
+                <button onClick={() => { saveToHistory(); setMobileMenuOpen(false); }} className={`flex items-center justify-center p-2.5 rounded-xl font-bold text-xs border ${isDarkMode ? 'bg-indigo-900 border-indigo-800 text-indigo-300' : 'bg-blue-50 border-blue-200 text-blue-700'}`}><Save size={14} className="mr-2"/> Save</button>
+                <button onClick={() => { exportMap('png'); setMobileMenuOpen(false); }} className={`col-span-2 flex items-center justify-center p-2.5 rounded-xl font-bold text-xs border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-900 border-slate-800 text-white'}`}><Download size={14} className="mr-2"/> Export Map (.png)</button>
               </div>
             )}
           </div>
-
-          <div className={`w-px h-6 mx-1 hidden sm:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
-          <a href={TIP_JAR_LINK} target="_blank" rel="noopener noreferrer" className={`flex items-center p-2 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm ${isDarkMode ? 'bg-pink-950 text-pink-400' : 'bg-pink-50 text-pink-600'}`}><Heart size="{16}" className="fill-red-500"/><span className="hidden sm:inline sm:ml-2">Support</span></a>
-          <div className={`w-px h-6 mx-1 hidden sm:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
-          
-          <SignedOut><SignInButton mode="modal"><button className={`px-3 py-2 sm:px-4 rounded-full font-bold text-xs sm:text-sm transition-colors ${isDarkMode ? 'bg-indigo-500 hover:bg-indigo-400 text-white' : 'bg-slate-900 text-white'}`}>Login</button></SignInButton></SignedOut>
-          <SignedIn><UserButton afterSignOutUrl="/"/></SignedIn>
-        </div>
+        )}
       </header>
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -661,11 +690,11 @@ function MainApp() {
             <div className={`absolute inset-0 z-10 overflow-y-auto custom-scroll p-4 sm:p-6 lg:p-8 ${isDarkMode ? 'bg-slate-950/90' : 'bg-slate-50/90'} backdrop-blur-sm`}>
               <div className={`w-full max-w-2xl mx-auto mt-4 mb-24 sm:mt-12 lg:mt-20 rounded-2xl md:rounded-[2rem] shadow-2xl border overflow-hidden ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
                 <div className={`flex border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'url' ? (isDarkMode ? 'bg-slate-900 shadow-sm text-white' : 'bg-white shadow-sm text-slate-900') : 'text-slate-500'}`} onClick={() => setInputMode('url')}><Link size="{14}" className="inline mr-1"/> Web Links</button>
+                  <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'url' ? (isDarkMode ? 'bg-slate-900 shadow-sm text-white' : 'bg-white shadow-sm text-slate-900') : 'text-slate-500'}`} onClick={() => setInputMode('url')}><Link size={14} className="inline mr-1" /> Web Links</button>
                   
-                  
+                  {/* DYNAMIC TAB NAME */}
                   <button className={`flex-1 py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest ${inputMode === 'local' ? (isDarkMode ? 'bg-slate-900 shadow-sm text-white' : 'bg-white shadow-sm text-slate-900') : 'text-slate-500'}`} onClick={() => setInputMode('local')}>
-                    {appMode === 'developer' ? <Code size="{14}" className="inline mr-1"/> : <FileText size="{14}" className="inline mr-1"/>}
+                    {appMode === 'developer' ? <Code size={14} className="inline mr-1" /> : <FileText size={14} className="inline mr-1" />}
                     {appMode === 'developer' ? 'Local Inputs' : 'Local Docs/Notes'}
                   </button>
                 </div>
@@ -676,7 +705,7 @@ function MainApp() {
                   ) : (
                     <div className="space-y-4 md:space-y-6">
                       <div className={`w-full border-2 border-dashed rounded-xl p-4 md:p-6 text-center transition-colors ${isDraggingOver ? (isDarkMode ? 'border-indigo-500 bg-indigo-900/30' : 'border-blue-500 bg-blue-50') : (isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-slate-50')}`} onDragOver={e=>{e.preventDefault(); setIsDraggingOver(true)}} onDragLeave={()=>setIsDraggingOver(false)} onDrop={e=>{e.preventDefault(); setIsDraggingOver(false); processFiles(e.dataTransfer.files);}}>
-                        <Upload size="{24}" className="text-slate-400 mx-auto mb-3"/>
+                        <Upload size={24} className="text-slate-400 mx-auto mb-3" />
                         <span className={`block text-xs md:text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Drag & Drop files or PDFs here</span>
                         
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -691,25 +720,25 @@ function MainApp() {
                       <div className="max-h-48 md:max-h-64 overflow-y-auto space-y-3 custom-scroll pr-2">
                         {localFiles.map((file) => (
                           <div key={file.id} className={`border rounded-xl flex flex-col overflow-hidden ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-                            
-                            <div className={`flex px-3 py-2 border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}><input type="text" value={file.name} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, name: e.target.value } : f))} className={`bg-transparent text-xs md:text-sm font-bold flex-1 outline-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`} placeholder={appMode === 'developer' ? "filename.js" : "document.pdf"} /><button onClick={() => setLocalFiles(p => p.filter(f => f.id !== file.id))} className="text-slate-400 hover:text-red-500"><Trash2 size="{14}"/></button></div>
-                            
+                            {/* DYNAMIC FILENAME PLACEHOLDER */}
+                            <div className={`flex px-3 py-2 border-b ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}><input type="text" value={file.name} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, name: e.target.value } : f))} className={`bg-transparent text-xs md:text-sm font-bold flex-1 outline-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`} placeholder={appMode === 'developer' ? "filename.js" : "document.pdf"} /><button onClick={() => setLocalFiles(p => p.filter(f => f.id !== file.id))} className="text-slate-400 hover:text-red-500"><Trash2 size={14}/></button></div>
+                            {/* DYNAMIC TEXTAREA PLACEHOLDER */}
                             <textarea value={file.content} onChange={e => setLocalFiles(p => p.map(f => f.id === file.id ? { ...f, content: e.target.value } : f))} className={`w-full h-20 md:h-24 p-3 text-xs font-mono resize-none outline-none custom-scroll ${isDarkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-800'}`} placeholder={appMode === 'developer' ? "// Paste code here..." : "Paste your text, notes, or wait for PDF extraction..."} />
                           </div>
                         ))}
                       </div>
-                      <button onClick={() => setLocalFiles(p => [...p, { id: Date.now(), name: appMode === 'developer' ? `snippet_${p.length + 1}.js` : `note_${p.length + 1}.txt`, content: '' }])} className={`text-[10px] md:text-xs font-bold flex items-center ${isDarkMode ? 'text-indigo-400' : 'text-blue-600'}`}><Plus size="{14}" className="mr-1"/> Add Section</button>
+                      <button onClick={() => setLocalFiles(p => [...p, { id: Date.now(), name: appMode === 'developer' ? `snippet_${p.length + 1}.js` : `note_${p.length + 1}.txt`, content: '' }])} className={`text-[10px] md:text-xs font-bold flex items-center ${isDarkMode ? 'text-indigo-400' : 'text-blue-600'}`}><Plus size={14} className="mr-1"/> Add Section</button>
                     </div>
                   )}
 
-                  {inputError && <div className={`mt-4 p-3 rounded-lg text-xs md:text-sm font-medium flex items-center ${isDarkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-700'}`}><AlertTriangle size="{16}" className="mr-2 shrink-0"/>{inputError}</div>}
+                  {inputError && <div className={`mt-4 p-3 rounded-lg text-xs md:text-sm font-medium flex items-center ${isDarkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-700'}`}><AlertTriangle size={16} className="mr-2 shrink-0" />{inputError}</div>}
                   <button onClick={handleAnalyze} className={`mt-6 md:mt-8 w-full py-4 rounded-xl font-bold text-sm md:text-base shadow-lg transition-all active:scale-95 ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}>Generate Architecture Map</button>
                 </div>
               </div>
             </div>
           )}
 
-          
+          {/* Loading / Error States */}
           {status !== 'idle' && status !== 'ready' && (
             <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center p-4 overflow-y-auto ${isDarkMode ? 'bg-slate-950/80' : 'bg-white/80'} backdrop-blur-sm`}>
                {status === 'error' && errorData ? (
@@ -725,7 +754,7 @@ function MainApp() {
                  </div>
                ) : (
                  <div className={`text-center p-6 md:p-8 rounded-2xl shadow-xl border w-full max-w-xs animate-in fade-in ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                   <Loader2 size="{36}" className="{`animate-spin" mx-auto mb-4 ${isDarkMode ? 'text-indigo-500' : 'text-slate-800'}`}/>
+                   <Loader2 size={36} className={`animate-spin mx-auto mb-4 ${isDarkMode ? 'text-indigo-500' : 'text-slate-800'}`}/>
                    <h3 className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Analyzing</h3>
                    <p className={`text-xs font-medium animate-pulse ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{statusMessage}</p>
                  </div>
@@ -733,35 +762,35 @@ function MainApp() {
             </div>
           )}
 
-          
+          {/* Map Controls */}
           {status === 'ready' && (
             <div className={`absolute bottom-4 right-4 z-10 flex space-x-1 p-1.5 rounded-xl shadow-lg border transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
-              <button onClick={() => setTransform(p => ({ ...p, scale: p.scale + 0.2 }))} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><ZoomIn size="{16}"/></button>
-              <button onClick={() => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - 0.2) }))} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><ZoomOut size="{16}"/></button>
-              <button onClick={() => setTransform({ x: 0, y: 0, scale: 1 })} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><Maximize size="{16}"/></button>
+              <button onClick={() => setTransform(p => ({ ...p, scale: p.scale + 0.2 }))} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><ZoomIn size={16}/></button>
+              <button onClick={() => setTransform(p => ({ ...p, scale: Math.max(0.1, p.scale - 0.2) }))} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><ZoomOut size={16}/></button>
+              <button onClick={() => setTransform({ x: 0, y: 0, scale: 1 })} className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}><Maximize size={16}/></button>
               
               <div className={`w-px h-5 mx-1 my-auto ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
               
               <button onClick={() => setLayoutDir(layoutDir === 'TD' ? 'LR' : 'TD')} className={`p-1.5 rounded-lg font-bold text-[10px] flex items-center ${isDarkMode ? 'hover:bg-slate-800 text-indigo-400' : 'hover:bg-slate-100 text-blue-600'}`}>
-                {layoutDir === 'TD' ? <ArrowRightLeft size="{16}"/> : <ArrowDownUp size="{16}"/>}
+                {layoutDir === 'TD' ? <ArrowRightLeft size={16}/> : <ArrowDownUp size={16}/>}
               </button>
             </div>
           )}
 
-          
+          {/* The Canvas */}
           <div className="w-full h-full origin-top-left cursor-grab active:cursor-grabbing flex items-center justify-center p-10 md:p-20 min-w-max min-h-max" style={{ transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})` }}>
             <div ref={mapContentRef} />
           </div>
         </div>
 
-        
+        {/* Floating Sidebar - Node Details (Focus Panel) */}
         <div className={`absolute right-0 top-0 bottom-0 w-full sm:w-80 md:w-96 border-l shadow-2xl z-20 transition-transform duration-300 flex flex-col ${selectedNodeId ? 'translate-x-0' : 'translate-x-full'} ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
           {selectedNode && (
             <>
               <div className={`p-4 border-b shrink-0 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                 <div className="flex justify-between items-start mb-2">
                   <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>{selectedNode.type || 'node'}</span>
-                  <button onClick={() => setSelectedNodeId(null)} className={`rounded-full p-1 shadow-sm border ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-900'}`}><X size="{16}"/></button>
+                  <button onClick={() => setSelectedNodeId(null)} className={`rounded-full p-1 shadow-sm border ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-900'}`}><X size={16}/></button>
                 </div>
                 <input type="text" value={selectedNode.label || 'Unknown'} onChange={e => handleNodeEdit(selectedNode.id, 'label', e.target.value)} className={`w-full text-lg font-bold bg-transparent outline-none border-b border-transparent transition-colors ${isDarkMode ? 'text-white focus:border-slate-500' : 'text-slate-900 focus:border-slate-300'}`} />
                 <div className="text-[10px] text-slate-400 mt-1 truncate">{selectedNode.file || 'unknown_file.js'}</div>
@@ -778,29 +807,29 @@ function MainApp() {
                 </div>
                 
                 <div className="space-y-2">
-                  {selectedNode.description && <div className={`rounded-xl p-3 border text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}><Zap size="{14}" className="inline mr-1 text-slate-400"/> {selectedNode.description}</div>}
+                  {selectedNode.description && <div className={`rounded-xl p-3 border text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}><Zap size={14} className="inline mr-1 text-slate-400"/> {selectedNode.description}</div>}
                   {selectedNode.returns && <div className={`rounded-xl p-3 border text-xs font-mono break-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>↩️ {selectedNode.returns}</div>}
-                  {selectedNode.ui_design && <div className={`rounded-xl p-3 border text-xs ${isDarkMode ? 'bg-blue-950 border-blue-900 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-900'}`}><Palette size="{14}" className="inline mr-1"/> {selectedNode.ui_design}</div>}
+                  {selectedNode.ui_design && <div className={`rounded-xl p-3 border text-xs ${isDarkMode ? 'bg-blue-950 border-blue-900 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-900'}`}><Palette size={14} className="inline mr-1"/> {selectedNode.ui_design}</div>}
                 </div>
                 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center mb-1.5"><MessageSquare size="{12}" className="mr-1.5"/> Graph Notes</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center mb-1.5"><MessageSquare size={12} className="mr-1.5"/> Graph Notes</label>
                   <textarea value={selectedNode.userComment || ''} onChange={e => handleNodeEdit(selectedNode.id, 'userComment', e.target.value)} placeholder="Type intel here..." className={`w-full h-16 p-2 border rounded-lg outline-none text-xs resize-none custom-scroll ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:bg-slate-700 focus:border-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-slate-300'}`} />
                 </div>
                 
-                
+                {/* DYNAMIC SIDEBAR SOURCE TEXT */}
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center mb-1.5">
-                    {appMode === 'developer' ? <Code size="{12}" className="mr-1.5"/> : <FileText size="{12}" className="mr-1.5"/>}
+                    {appMode === 'developer' ? <Code size={12} className="mr-1.5"/> : <FileText size={12} className="mr-1.5"/>}
                     {appMode === 'developer' ? 'Source Code' : 'Source Excerpt'}
                   </label>
                   <pre className={`p-3 rounded-xl text-[10px] overflow-x-auto max-h-48 custom-scroll ${isDarkMode ? 'bg-black border border-slate-800 text-slate-300' : 'bg-slate-900 border-slate-700 text-slate-300'}`}><code>{selectedNode.code_snippet || (appMode === 'developer' ? 'No code provided' : 'No text provided')}</code></pre>
                 </div>
                 
-                
+                {/* DYNAMIC ACTION BUTTON */}
                 <div className="pt-2 pb-6">
                   <button onClick={() => handleRefactor(selectedNode)} disabled={isRefactoring} className={`w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-70 flex justify-center items-center shadow-md active:scale-95 ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-white'}`}>
-                    {isRefactoring ? <Loader2 size="{14}" className="animate-spin mr-2"/> : <Zap size="{14}" className="mr-2 text-yellow-400 fill-yellow-400"/>} 
+                    {isRefactoring ? <Loader2 size={14} className="animate-spin mr-2"/> : <Zap size={14} className="mr-2 text-yellow-400 fill-yellow-400"/>} 
                     {appMode === 'developer' ? 'Ask AI to Refactor' : 'Ask AI to Elaborate'}
                   </button>
                   {refactorSuggestion && <div className={`mt-3 p-3 border rounded-xl text-[10px] whitespace-pre-wrap max-h-64 overflow-y-auto custom-scroll shadow-inner ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200'}`}>{refactorSuggestion}</div>}
@@ -811,17 +840,17 @@ function MainApp() {
         </div>
       </div>
 
-      
+      {/* --- VAULT SIDEBAR --- */}
       <div className={`fixed inset-y-0 left-0 w-full sm:w-80 border-r shadow-2xl z-40 transform transition-transform duration-300 flex flex-col ${historySidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
         <div className={`p-4 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-          <h2 className="text-base font-bold flex items-center"><HardDrive size="{18}" className="mr-2 text-slate-500"/> Local Vault</h2>
-          <button onClick={() => setHistorySidebarOpen(false)} className={`rounded-full p-1.5 shadow-sm border ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-800'}`}><X size="{18}"/></button>
+          <h2 className="text-base font-bold flex items-center"><HardDrive size={18} className="mr-2 text-slate-500"/> Local Vault</h2>
+          <button onClick={() => setHistorySidebarOpen(false)} className={`rounded-full p-1.5 shadow-sm border ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-800'}`}><X size={18}/></button>
         </div>
         
         <div className={`p-4 border-b space-y-3 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
           <div className={`text-[10px] mb-2 leading-relaxed p-3 rounded-xl border ${isDarkMode ? 'bg-indigo-950 border-indigo-900 text-indigo-300' : 'bg-blue-50 border-blue-100 text-slate-500'}`}>Maps are stored in your session. <b>Export your backup</b> to save them!</div>
-          <button onClick={handleExportBackup} className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center shadow-sm ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-white'}`}><DownloadCloud size="{16}" className="mr-2"/> Export Backup (.json)</button>
-          <button onClick={() => importFileRef.current?.click()} className={`w-full py-2.5 border rounded-xl text-xs font-bold flex items-center justify-center shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'}`}><UploadCloud size="{16}" className="mr-2"/> Import Backup</button>
+          <button onClick={handleExportBackup} className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center shadow-sm ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-white'}`}><DownloadCloud size={16} className="mr-2" /> Export Backup (.json)</button>
+          <button onClick={() => importFileRef.current?.click()} className={`w-full py-2.5 border rounded-xl text-xs font-bold flex items-center justify-center shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'}`}><UploadCloud size={16} className="mr-2" /> Import Backup</button>
           <input type="file" ref={importFileRef} accept=".json" onChange={handleImportBackup} className="hidden" />
         </div>
         
@@ -829,7 +858,7 @@ function MainApp() {
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">History</div>
           {localHistory.length === 0 ? <div className={`text-center text-xs mt-6 border-2 border-dashed rounded-xl p-6 ${isDarkMode ? 'text-slate-500 border-slate-700' : 'text-slate-500 border-slate-200'}`}>No maps saved yet.</div> : localHistory.map(item => (
             <div key={item.id} onClick={() => loadFromHistory(item)} className={`p-3 border rounded-xl cursor-pointer group relative transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-indigo-500' : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-md'}`}>
-              <div className="flex justify-between items-start mb-1.5"><h3 className={`font-bold text-xs truncate pr-6 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.title}</h3><button onClick={(e) => deleteHistoryItem(item.id, e)} className={`absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-red-500 ${isDarkMode ? 'text-slate-500 bg-slate-800' : 'text-slate-300 bg-white'}`}><Trash2 size="{14}"/></button></div>
+              <div className="flex justify-between items-start mb-1.5"><h3 className={`font-bold text-xs truncate pr-6 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.title}</h3><button onClick={(e) => deleteHistoryItem(item.id, e)} className={`absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-red-500 ${isDarkMode ? 'text-slate-500 bg-slate-800' : 'text-slate-300 bg-white'}`}><Trash2 size={14}/></button></div>
               <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{new Date(item.createdAt).toLocaleDateString()} • {item.architecture?.nodes?.length || 0} Nodes</div>
             </div>
           ))}
@@ -838,7 +867,7 @@ function MainApp() {
       
       {historySidebarOpen && <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 animate-in fade-in" onClick={() => setHistorySidebarOpen(false)}></div>}
 
-      
+      {/* --- SAAS FOOTER --- */}
       <footer className={`w-full border-t py-3 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between text-[10px] font-medium z-10 shrink-0 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
         <div className="mb-2 sm:mb-0">
           © {new Date().getFullYear()} RepoVue Visualizer. All rights reserved.
@@ -890,8 +919,8 @@ class ErrorBoundary extends React.Component {
 export default function App() {
   return (
     <ErrorBoundary>
-      <Analytics/>
-      <MainApp/>
+      <Analytics />
+      <MainApp />
     </ErrorBoundary>
   );
 }
